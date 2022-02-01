@@ -43,12 +43,23 @@ class Config
     {
         if(is_array($file)){
             foreach($file as $k=>$v){
-                $config = include self::$path.$v.'.php';
-                $this->set($config, $v);
+                $fn = self::$path.$v.'.php';
+                if(file_exists($fn)){
+                    $config = include $fn;
+                    $this->set($config, $v);    
+                }else{
+                    echo "{$fn} not found!";
+                }
+                
             }
         }else{
-            $config = include self::$path.$file.'.php';
-            $this->set($config, $file);
+            $fn = self::$path.$file.'.php';
+            if(file_exists($fn)){
+                $config = include $fn;
+                $this->set($config, $file);
+            }else{
+                echo "{$fn} not found!";
+            }
         }
 
         return $this->config;
