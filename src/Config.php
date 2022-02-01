@@ -18,15 +18,19 @@ class Config
      * 配置文件目录
      * @var string
      */
-    protected $path;
+    protected static $path;
 
     /**
      * 构造方法
      * @access public
      */
-    public function __construct($path = 'config/')
+    public function __construct($path = '')
     {
-        $this->path = $path;
+        if($path != ''){
+            self::$path = $path;
+        }
+        
+        //$this->path = $path;
     }
     
     /**
@@ -39,11 +43,11 @@ class Config
     {
         if(is_array($file)){
             foreach($file as $k=>$v){
-                $config = include $this->path.$v.'.php';
+                $config = include self::$path.$v.'.php';
                 $this->set($config, $v);
             }
         }else{
-            $config = include $this->path.$file.'.php';
+            $config = include self::$path.$file.'.php';
             $this->set($config, $file);
         }
 
