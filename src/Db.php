@@ -7,7 +7,7 @@ class Db {
     
     /**
      * 构造方法
-     * @access public
+     * @access public $i 为配置文件db列表里的第几个配置
      */
     public static function Create($rediscfg, $i=0)
     {

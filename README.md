@@ -7,7 +7,7 @@ LitePhp 1.0
 [![PHP Version](https://img.shields.io/badge/php-%3E%3D7.0-8892BF.svg)](http://www.php.net/)
 [![License](https://poser.pugx.org/lzs9605/litephp/license)](https://packagist.org/packages/lzs9605/litephp)
 
-LitePhp的公共库
+LitePhp的公共库，需先创建LiteApp 或LiteApi项目使用
 
 
 
@@ -52,5 +52,5 @@ LitePhp遵循Apache2开源协议发布，并提供免费使用。
 
 本项目包含的第三方源码和二进制文件之版权信息另行标注。
 
-版权所有Copyright © 2022 by Jason Lin All rights reserved。
+版权所有Copyright © 2022 by Jason Lin All rights reserved。创建于2022年除夕夜。
 
