@@ -1,9 +1,9 @@
 <?php
 
 define('IN_LitePhp', true);
-require __DIR__.'/../../../../vendor/autoload.php';
+require_once "autoload.php";
 
-$cfg  = new \LitePhp\Config('../../../../config/');
+$cfg  = new LitePhp\Config('/config/');
 var_dump($cfg);
 $config = $cfg->load('app');
 
