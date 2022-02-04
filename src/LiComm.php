@@ -55,4 +55,23 @@ class LiComm {
 		return preg_replace('/^http:/i','https:',$url);
 	}
     
+    public static function is_robot() {
+        $a = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
+        return preg_match("/(spider|bot|crawl|slurp|lycos|robozilla)/i", $a);
+    }
+
+    public static function is_ip($ip) {
+        return preg_match("/^([0-9]{1,3}\.){3}[0-9]{1,3}$/", $ip);
+    }
+    
+    public static function ip(){
+        if(isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+				if(self::is_ip($_SERVER['HTTP_X_FORWARDED_FOR'])) return $_SERVER['HTTP_X_FORWARDED_FOR'];
+				$ip = trim(end(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])));
+				if(self::is_ip($ip)) return $ip;
+			}
+			if(isset($_SERVER['REMOTE_ADDR']) && self::is_ip($_SERVER['REMOTE_ADDR'])) return $_SERVER['REMOTE_ADDR'];
+			if(isset($_SERVER['HTTP_CLIENT_IP']) && self::is_ip($_SERVER['HTTP_CLIENT_IP'])) return $_SERVER['HTTP_CLIENT_IP'];
+			return '0.0.0.0';
+    }
 }

@@ -83,7 +83,7 @@ class LiRsa {
         return $data;
     }
     public function verifySignArray($data, $pubkey='', $code = 'base64'){
-        $sign = $data['sign'];
+        $sign = isset($data['sign']) ? $data['sign'] : '';
         unset($data['sign']);
         ksort($data);
         return $this->verifySign(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),$sign,$pubkey,$code);
