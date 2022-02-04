@@ -46,6 +46,17 @@ class Template {
         
     }
     
+    /*
+     * 使用消息模板输出提示
+     * @param 
+     */
+    public static function message($promptMessage='', $msgTitle=''){
+        $msgTitle = empty($msgTitle) ? '信息提示' : $msgTitle;
+        $promptMessage = empty($promptMessage) ? date('Y-m-d H:i:s') : $promptMessage;
+        include self::load('message');
+        exit(0);
+    }
+    
     protected static function check_name($name) {
         if(strpos($name, '__') !== false || strpos($name, '--') !== false) return false; 
         return preg_match("/^[a-z0-9]{1}[a-z0-9_\-]{0,}[a-z0-9]{1}$/", $name);

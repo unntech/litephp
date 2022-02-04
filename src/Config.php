@@ -18,7 +18,7 @@ class Config
      * 配置文件目录
      * @var string
      */
-    protected static $path;
+    protected $path;
 
     /**
      * 构造方法
@@ -26,11 +26,11 @@ class Config
      */
     public function __construct($path = '')
     {
-        if($path != ''){
-            self::$path = $path;
+        if(empty($path)){
+            $this->path = dirname(__DIR__ , 4) . '/config/';
+        }else{
+            $this->path = $path;
         }
-        
-        //$this->path = $path;
     }
     
     /**
@@ -43,22 +43,22 @@ class Config
     {
         if(is_array($file)){
             foreach($file as $k=>$v){
-                $fn = self::$path.$v.'.php';
+                $fn = $this->path.$v.'.php';
                 if(file_exists($fn)){
                     $config = include $fn;
                     $this->set($config, $v);    
                 }else{
-                    echo "{$fn} not found!";
+                    echo "{$fn} not found!\n";
                 }
                 
             }
         }else{
-            $fn = self::$path.$file.'.php';
+            $fn = $this->path.$file.'.php';
             if(file_exists($fn)){
                 $config = include $fn;
                 $this->set($config, $file);
             }else{
-                echo "{$fn} not found!";
+                echo "{$fn} not found!\n";
             }
         }
 
