@@ -24,5 +24,47 @@ class Redis {
         self::$redis = $redis;
         return $redis;
     }
+    
+    public static function set($key, $value, $ttl=0){
+        
+        return $ttl > 0 ? self::$redis->set(self::$pre.$key, $value, $ttl) : self::$redis->set(self::$pre.$key, $value);
+        
+    }
+    
+    public static function get($key){
+        
+        return self::$redis->get(self::$pre.$key);
+        
+    }
+    
+    public static function del($key){
+        
+        return self::$redis->del(self::$pre.$key);
+        
+    }
+    
+    public static function incr($key){
+        
+        return self::$redis->incr(self::$pre.$key);
+        
+    }
+    
+    public static function decr($key){
+        
+        return self::$redis->decr(self::$pre.$key);
+        
+    }
+    
+    public static function exists($key){
+        
+        return self::$redis->exists(self::$pre.$key);
+        
+    }
+    
+    public static function expire($key, $ttl=0){
+        
+        return self::$redis->expire(self::$pre.$key, $ttl);
+        
+    }
 
 }
