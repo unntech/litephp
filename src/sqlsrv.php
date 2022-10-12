@@ -19,7 +19,11 @@ class sqlsrv {
     }
     
 	function connect( $dbhost = 'localhost', $dbuser, $dbpw, $dbname, $dbcharset ) {
+        if(empty($dbcharset)){
+			$dbcharset = 'UTF-8';
+		}
 		$connectionOptions = array(
+            'CharacterSet' => $dbcharset,
 			"Database" => $dbname,
 			"Uid" => $dbuser,
 			"PWD" => $dbpw

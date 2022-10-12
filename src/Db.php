@@ -20,6 +20,9 @@ class Db {
             case 'sqlsrv':
                 $db = new \LitePhp\sqlsrv($cfg);
                 break;
+            case 'mongodb':
+				$db = new \LitePhp\mongodb($cfg);
+				break;
             default :
                 $db = false;
         }
