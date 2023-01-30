@@ -24,6 +24,7 @@ class mongodb {
 		return $result;
 	}
 	
+	//插入多条数据
 	public function inserts($table, $datas){
 		$bulk = new \MongoDB\Driver\BulkWrite;
 		foreach($datas as $k=>$v){
@@ -55,14 +56,43 @@ class mongodb {
 		return $result;
 	}
 	
+	/*
+	 * $filter = ['a'=>['$lt'=>9]];
+	 * $options = ['projection' => ['_id' => 0],'sort'=>['a'=> -1], 'limit'=>5, 'skip'=>0];
+	 */
 	public function query($table, $filter = [], $options = null){
 		$query = new \MongoDB\Driver\Query($filter, $options);
 		$cursor = $this->manager->executeQuery($this->dbname . '.' . $table, $query);
-		$ret = [];
-		foreach($cursor as $v){
-			$ret[] = $v;
+		
+		return $cursor->toArray();
+	}
+	
+	//把query出来的数据对象转换成数组的扩展方法，方便查看使用
+	public function cursorObjToArray($cursor){
+		$result = [];
+		foreach($cursor as $rec){
+			$r = [];
+			foreach($rec as $k => $v){
+				if(gettype($v) == 'object'){
+					switch(get_class($v)){
+						case 'MongoDB\BSON\ObjectId':
+							$_v = $v->__toString();
+							$r['_time'] = $v->getTimestamp();
+							break;
+						case 'MongoDB\BSON\UTCDateTime':
+							$_v = $v->toDateTime()->setTimezone(new \DateTimeZone('Asia/Shanghai'));
+							break;
+						default:
+							$_v = $v;
+					}
+				}else{
+					$_v = $v;
+				}
+				$r[$k] = $_v;
+			}
+			$result[] = $r;
 		}
-		return $ret;
+		return($result);
 	}
 	
 	public function ISODate($d = null){
