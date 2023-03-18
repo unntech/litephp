@@ -132,4 +132,13 @@ class Config
 
         return $result;
     }
+    
+    public function exist($key){
+        if(isset($this->config[$key])){
+            return true;
+        }else{
+            return false;
+        }
+    }
+    
 }
