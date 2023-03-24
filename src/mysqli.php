@@ -3,13 +3,14 @@
 namespace LitePhp;
 
 class mysqli {
-	public $connid;
+	protected $connid;
 	public $querynum = 0;
-	public $cursor = 0;
 	public $err = 0;
 	public $linked = 1;
-	public $result = array();
+	public $resultObj;
 	public $sql = '';
+	protected $options = ['table'=>'', 'alias'=> null, 'fields'=>null, 'condition'=>null, 'param'=>[], 'fetchSql'=>false];
+	protected $query_finished = false;
     
     /**
      * 构造方法
@@ -51,7 +52,110 @@ class mysqli {
 	public function query($sql) {
 		if(!($query = mysqli_query($this->connid, $sql))) $this->halt('MySQL Query Error', $sql);
 		$this->querynum++;
+		$this->query_finished = true;
+		$this->resultObj = $query;
 		return $query;
+	}
+	
+	//返回当前SQL语句
+	public function getLastSql(){
+		return $this->sql;
+	}
+	
+	//事务操作
+	public function startTrans(){
+		return $this->query('START TRANSACTION');
+	}
+	
+	public function commit(){
+		return $this->query('COMMIT');
+	}
+	
+	public function rollback(){
+		return $this->query('ROLLBACK');
+	}
+	
+	/*
+	 * 面向对象 链式操作
+	 */
+	public function table($table, $alias= null){
+		if(empty($table)){
+			return false;
+		}
+		$table = preg_replace('/[^A-Za-z0-9_\.`]/', '', $table);
+		$this->options = ['table'=>"{$table}", 'alias'=>$alias, 'fields'=>null, 'condition'=>null, 'param'=>[], 'fetchSql'=>false];
+		$this->query_finished = false;
+		return $this;
+	}
+	
+	public function alias($alias){
+		$this->options['alias'] = $alias;
+		return $this;
+	}
+	
+	public function fetchSql(bool $fetch = true){
+		$this->options['fetchSql'] = $fetch;
+		return $this;
+	}
+	
+	public function fields($fields){
+		$this->options['fields'] = $this->_fieldsAddAlais($fields);
+		return $this;
+	}
+	
+	public function where($condition){
+		$this->options['condition'] = $condition;
+		return $this;
+	}
+	
+	public function param($param){
+		$this->options['param'] = $param;
+		return $this;
+	}
+	
+	public function limit($limit){
+		$this->options['param']['LIMIT'] = $limit;
+		return $this;
+	}
+	
+	public function join($join){
+		$this->options['param']['JOIN'] = $join;
+		return $this;
+	}
+	
+	public function groupby($groupby){
+		$this->options['param']['GROUPBY'] = $groupby;
+		return $this;
+	}
+	
+	public function order($order){
+		$this->options['param']['ORDER'] = $order;
+		return $this;
+	}
+	
+	public function getOptions(){
+		return $this->options;
+	}
+	
+	//使用buildSql构造子查询
+	public function buildSql(){
+		$this->options['fetchSql'] =  true;
+		$res = $this->select();
+		$subQuery = '( ' . $res . ' )';
+		return $subQuery;
+	}
+	
+	//查询结果转数组
+	public function toArray($indexfield=''){
+		$ret = array();
+        while($r = $this->resultObj->fetch_assoc()){
+            if($indexfield=='' || !isset($r[$indexfield])){
+                $ret[] = $r;
+            }else{
+                $ret[$r[$indexfield]] = $r;
+            }    
+        }
+        return $ret;
 	}
 	
 	/*
@@ -64,7 +168,15 @@ class mysqli {
 	 * ['id'=>['>',1], 'fed'=>['LIKE','S%']] //id > 1 and fed LIKE 'S%'
 	 */
 	
-	public function update($table, $fields = [], $condition = null){
+	public function update($table = null, $fields = [], $condition = null){
+		if(empty($table)){
+			$table = $this->options['table'];
+			if(empty($table) || $this->query_finished !== false){ //未设置表名
+				return false;
+			}
+			$fields = $this->options['fields'];
+			$condition = $this->options['condition'];
+		}
 		if(!is_array($fields) || empty($fields)){
 			return false;
 		}
@@ -89,6 +201,7 @@ class mysqli {
 			
 		}
 		$this->sql = $sql;
+		if($this->options['fetchSql']){ return $sql; }
 		return $this->query($sql) ;
 	}
 	
@@ -101,7 +214,14 @@ class mysqli {
 	 * ['id'=>['>',1], 'fed'=>['LIKE','S%']] //id > 1 and fed LIKE 'S%'
 	 */
 	
-	public function delete($table, $condition = null){
+	public function delete($table = null, $condition = null){
+		if(empty($table)){
+			$table = $this->options['table'];
+			if(empty($table) || $this->query_finished !== false){ //未设置表名
+				return false;
+			}
+			$condition = $this->options['condition'];
+		}
 		$this->sql = '';
 		$sql = "DELETE FROM `{$table}` ";
 		if(!empty($condition)){
@@ -119,6 +239,7 @@ class mysqli {
 			
 		}
 		$this->sql = $sql;
+		if($this->options['fetchSql']){ return $sql; }
 		return $this->query($sql) ;
 	}
 	
@@ -127,7 +248,14 @@ class mysqli {
 	 * $table 数据库表名
 	 * $data 数据集
 	 */
-	public function insert($table, $data){
+	public function insert($table, $data = null){
+		if(is_array($table) && $data == null){  //兼容对象写法
+			$data = $table;
+			$table = $this->options['table'];
+			if(empty($table) || $this->query_finished !== false){ //未设置表名
+				return false;
+			}
+		}
 		$this->sql = '';
 		if(empty($data)){
 			return false;
@@ -135,6 +263,8 @@ class mysqli {
 		$d = $this->_fields_split($data);
 		$sql = "INSERT INTO `{$table}` (" . implode(',', $d[0]) . ") VALUES (" . implode(',', $d[1]) .") ";
 		$this->sql = $sql;
+		if($this->options['fetchSql']){ return $sql; }
+		
 		$res = $this->query($sql) ;
 		if($res){
 			return $this->insert_id();
@@ -148,7 +278,14 @@ class mysqli {
 	 * $table 数据库表名
 	 * $data 数据集 二级数组
 	 */
-	public function insertAll($table, $data){
+	public function insertAll($table, $data = null){
+		if(is_array($table) && $data == null){ //兼容对象写法
+			$data = $table;
+			$table = $this->options['table'];
+			if(empty($table) || $this->query_finished !== false){ //未设置表名
+				return false;
+			}
+		}
 		$this->sql = '';
 		$d = [];
 		foreach($data as $da){
@@ -166,6 +303,7 @@ class mysqli {
 			$first = false;
 		}
 		$this->sql = $sql;
+		if($this->options['fetchSql']){ return $sql; }
 		
 		$res = $this->query($sql) ;
 		return $res;
@@ -186,10 +324,28 @@ class mysqli {
 				'LIMIT'=>[0,10]
 	 			]
 	 */
-	public function select($table, $fields = null, $condition = null, $param =[]){
+	public function select($table = null, $fields = null, $condition = null, $param =[]){
+		if($table === true){
+			$table = null;
+			$returnResult = true;
+		}else{
+			$returnResult = false;
+		}
+		if(empty($table)){
+			$table = $this->options['table'];
+			if(empty($table) || $this->query_finished !== false){ //未设置表名
+				return false;
+			}
+			$fields = $this->options['fields'];
+			$condition = $this->options['condition'];
+			$param = $this->options['param'];
+			$alias = $this->options['alias'];
+		}else{
+			$alias = null;
+		}
 		$this->sql = '';
 		if(empty($fields)){
-			$sql = "SELECT * FROM {$table} ";
+			$sql = "SELECT ".(empty($alias) ? '' : "{$alias}.")."* FROM {$table} ";
 		}else{
 			$ct = gettype($fields);
 			if($ct == 'string'){
@@ -200,6 +356,9 @@ class mysqli {
 			}else{
 				$sql = "SELECT Fields FROM {$table} ";
 			}
+		}
+		if(!empty($alias)){
+			$sql .= "AS {$alias} ";
 		}
 		
 		if(!empty($param['JOIN'])){
@@ -237,14 +396,29 @@ class mysqli {
             }
 		}
 		$this->sql = $sql;
+		if($this->options['fetchSql']){ return $sql; }
+		
 		$query = $this->query($sql) ;
-		return $query;
+		if($returnResult){
+			return $query;
+		}else{
+			return $this;
+		}
+		
 	}
 	
 	/*
 	 * 查询一条数据
 	 */
-	public function selectOne($table, $fields = null, $condition = null){
+	public function selectOne($table=null, $fields = null, $condition = null){
+		if(empty($table)){
+			$table = $this->options['table'];
+			if(empty($table) || $this->query_finished !== false){ //未设置表名
+				return false;
+			}
+			$fields = $this->options['fields'];
+			$condition = $this->options['condition'];
+		}
 		$this->sql = '';
 		if(empty($fields)){
 			$sql = "SELECT * FROM {$table} ";
@@ -277,10 +451,16 @@ class mysqli {
 		$sql .= " LIMIT 1";
 		
 		$this->sql = $sql;
+		if($this->options['fetchSql']){ return $sql; }
+		
 		$query = $this->query($sql) ;
 		$row = $this->fetch_array($query);
 		$this->free_result($query);
 		return $row;
+	}
+	
+	public function getOne($table=null, $fields = null, $condition = null){
+		return $this->selectOne($table, $fields, $condition);
 	}
 
 	public function get_one($sql) {
@@ -290,6 +470,45 @@ class mysqli {
 		$r = $this->fetch_array($query);
 		$this->free_result($query);
 		return $r;
+	}
+	
+	public function getValue($table = null, $fields = null, $condition = null){
+		if(empty($table)){
+			$table = $this->options['table'];
+			if(empty($table) || $this->query_finished !== false){ //未设置表名
+				return false;
+			}
+			$fields = $this->options['fields'];
+			$condition = $this->options['condition'];
+		}
+		$ct = gettype($fields);
+		if(empty($fields) || $ct != 'string'){
+			return false;
+		}
+		$fields = preg_replace('/[^A-Za-z0-9_,\. `()\*]/', '', $fields);
+		$sql = "SELECT {$fields} FROM {$table} ";
+		if(!empty($condition)){
+			$ct = gettype($condition);
+			if($ct == 'string'){
+				$sql .= " WHERE " . $condition;
+			}elseif($ct == 'array'){
+				$cons = $this->_condition_strip($condition);
+				$sql .= " WHERE " . implode(' AND ', $cons);
+			}else{
+				//条件参数类型不正常
+				$this->sql = 'condition type error';
+				return false;
+			}
+		}
+		$sql .= " LIMIT 1";
+		
+		$this->sql = $sql;
+		if($this->options['fetchSql']){ return $sql; }
+		
+		$query = $this->query($sql);
+		$r = $this->fetch_row($query);
+		$this->free_result($query);
+		return $r[0];
 	}
 	
 	public function get_value($sql) {
@@ -315,7 +534,14 @@ class mysqli {
         return $ret;
     }
 	
-	public function count($table, $condition = '') {
+	public function count($table = null, $condition = '') {
+		if(empty($table)){
+			$table = $this->options['table'];
+			if(empty($table) || $this->query_finished !== false){ //未设置表名
+				return false;
+			}
+			$condition = $this->options['condition'];
+		}
 		$this->sql = '';
 		$sql = 'SELECT COUNT(*) AS amount FROM '.$table;
 		//if($condition) $sql .= ' WHERE '.$condition;
@@ -339,7 +565,7 @@ class mysqli {
 	}
 
 	public function fetch_array($query, $result_type = MYSQLI_ASSOC) {
-		return is_array($query) ? $this->_fetch_array($query) : mysqli_fetch_array($query, $result_type);
+		return mysqli_fetch_array($query, $result_type);
 	}
 
 	public function affected_rows() {
@@ -352,10 +578,6 @@ class mysqli {
 
 	public function num_fields($query) {
 		return mysqli_num_fields($query);
-	}
-
-	public function result($query, $row) {//DEBUG
-		return @mysqli_result($query, $row);
 	}
 
 	public function free_result($query) {
@@ -429,16 +651,6 @@ class mysqli {
 	public function escape_string($str){
 		return mysqli_real_escape_string($this->connid, $str);
 	}
-
-	protected function _fetch_array($query = array()) {
-		if($query) $this->result = $query; 
-		if(isset($this->result[$this->cursor])) {
-			return $this->result[$this->cursor++];
-		} else {
-			$this->cursor = 0;
-			return array();
-		}
-	}
 	
 	protected function _fields_strip($fields){
 		$ufields = [];
@@ -506,9 +718,31 @@ class mysqli {
 		return [$fk, $fv];
 	}
 	
+	protected function _fieldsAddAlais($fields){
+		if(empty($this->options['alias'])){
+			return $fields;
+		}
+		$ct = gettype($fields);
+		if($ct = 'array'){
+			$_fields = [];
+			foreach($fields as $k=>$v){
+				if(false === strpos($v, '.')){
+					$_fields[] = $this->options['alias'] .'.'.$v;
+				}else{
+					$_fields[] = $v;
+				}
+			}
+			$fields = $_fields;
+		}
+		return $fields;
+	}
+	
 	protected function _condition_strip($condition){
 		$cons = [];
 		foreach($condition as $k=>$v){
+			if(false === strpos($k, '.') && !empty($this->options['alias'])){
+				$k = $this->options['alias'] . '.' . $k;
+			}
 			switch(gettype($v)){
 				case 'string':
 					$cons[] = $k . " = '" .$this->escape_string($v). "' ";
