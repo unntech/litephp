@@ -160,6 +160,7 @@ class LiHttp {
     public static function redirect($url, $permanently = false){
         self::sendStatus($permanently ? 301 : 302);
         header('Location:'.$url);
+        exit(0);
     }
     
 }

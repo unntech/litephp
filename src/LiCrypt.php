@@ -16,7 +16,7 @@ class LiCrypt {
 		$ivlen = openssl_cipher_iv_length($this -> cipher);
         //$this -> iv = openssl_random_pseudo_bytes($ivlen);
 		$this -> iv = empty($iv) ? $this->ivstr($key, $ivlen) : $iv;
-        $this -> salt = substr(md5('UNN.TECH'.$key),3,16);
+        $this -> salt = substr(md5('UNN.TECH'.$key).$this->iv,3,16);
         $this -> err = 0;
 	}
 	
