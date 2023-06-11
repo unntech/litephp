@@ -104,7 +104,15 @@ class mysqli {
 	}
 	
 	public function where($condition){
-		$this->options['condition'] = $condition;
+        if(is_array($condition)){
+            if($this->_array_is_list($condition)){
+                $this->options['condition'] = array_merge($this->options['condition'], $condition);
+            }else{
+                $this->options['condition'][] = $condition;
+            }
+        }else{
+            $this->options['condition'] = $condition;
+        }
 		return $this;
 	}
 	
@@ -723,7 +731,7 @@ class mysqli {
 			return $fields;
 		}
 		$ct = gettype($fields);
-		if($ct = 'array'){
+		if($ct == 'array'){
 			$_fields = [];
 			foreach($fields as $k=>$v){
 				if(false === strpos($v, '.')){
@@ -736,8 +744,39 @@ class mysqli {
 		}
 		return $fields;
 	}
-	
-	protected function _condition_strip($condition){
+
+    protected function _array_is_list($arr){
+        if(function_exists('array_is_list')) {
+            return array_is_list($arr);
+        }else{
+            return $this->__array_is_list($arr);
+        }
+    }
+    private function __array_is_list($arr){
+        $i = 0;
+        foreach ($arr as $k => $v) {
+            if ($k !== $i++) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    protected function _condition_strip($condition){
+        if($this->_array_is_list($condition)){
+            $cons = [];
+            foreach ($condition as $kk=>$cc){
+                $_cons = $this->__condition_strip($cc);
+                foreach ($_cons as $k=>$v){
+                    $cons[] = $v;
+                }
+            }
+            return  $cons;
+        }else{
+            return $this->__condition_strip($condition);
+        }
+    }
+	protected function __condition_strip($condition){
 		$cons = [];
 		foreach($condition as $k=>$v){
 			if(false === strpos($k, '.') && !empty($this->options['alias'])){
