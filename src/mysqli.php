@@ -105,8 +105,15 @@ class mysqli {
 	
 	public function where($condition){
         if(is_array($condition)){
+            if(!empty($this->options['condition']) && !is_array($this->options['condition'])){
+                $this->options['condition'] = [];
+            }
             if($this->_array_is_list($condition)){
-                $this->options['condition'] = array_merge($this->options['condition'], $condition);
+                if(empty($this->options['condition']) || !is_array($this->options['condition'])){
+                    $this->options['condition'] = $condition;
+                }else{
+                    $this->options['condition'] = array_merge($this->options['condition'], $condition);
+                }
             }else{
                 $this->options['condition'][] = $condition;
             }
