@@ -366,7 +366,7 @@ class mysqli {
 			if($ct == 'string'){
 				$fields = preg_replace('/[^A-Za-z0-9_,\. `()\*]/', '', $fields);
 				$sql = "SELECT {$fields} FROM {$table} ";
-			}elseif($ct = 'array'){
+			}elseif($ct == 'array'){
 				$sql = "SELECT ". implode(',', $fields) ." FROM {$table} ";
 			}else{
 				$sql = "SELECT Fields FROM {$table} ";
@@ -442,7 +442,7 @@ class mysqli {
 			if($ct == 'string'){
 				$fields = preg_replace('/[^A-Za-z0-9_,\. `()\*]/', '', $fields);
 				$sql = "SELECT {$fields} FROM {$table} ";
-			}elseif($ct = 'array'){
+			}elseif($ct == 'array'){
 				$sql = "SELECT ". implode(',', $fields) ." FROM {$table} ";
 			}else{
 				$sql = "SELECT Fields FROM {$table} ";
