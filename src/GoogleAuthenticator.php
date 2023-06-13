@@ -3,6 +3,7 @@ namespace LitePhp ;
 
 class GoogleAuthenticator
 {
+    protected $qcodeUrl = 'https://apis.zhisg.com/qrcode.php';
     protected $_codeLength = 6;
  
     /**
@@ -103,7 +104,10 @@ class GoogleAuthenticator
         }
  
         //return 'https://chart.googleapis.com/chart?chs='.$width.'x'.$height.'&chld='.$level.'|0&cht=qr&chl='.$urlencoded.'';
-		return 'https://apis.zhisg.com/qrcode.php?size='.$size.'&margin=1&q='.$urlencoded.'';
+        if(defined('IN_LitePhp')){
+            $this->qcodeUrl = '//'.$_SERVER['SERVER_NAME'].'/qrcode.php';
+        }
+		return $this->qcodeUrl.'?size='.$size.'&margin=1&q='.$urlencoded.'';
     }
  
     /**
