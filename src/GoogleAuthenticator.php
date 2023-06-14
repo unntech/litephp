@@ -80,6 +80,32 @@ class GoogleAuthenticator
  
         return str_pad($value % $modulo, $this->_codeLength, '0', STR_PAD_LEFT);
     }
+    
+    /**
+     * Get QR-Code String.
+     *
+     * @param string $name
+     * @param string $secret
+     * @param string $title
+     * @param array  $params
+     *
+     * @return string
+     */
+    public function getQRCodeGoogle($name, $secret, $title = null, $params = array())
+    {
+        $width = !empty($params['width']) && (int) $params['width'] > 0 ? (int) $params['width'] : 200;
+        $height = !empty($params['height']) && (int) $params['height'] > 0 ? (int) $params['height'] : 200;
+		$size = !empty($params['size']) && (int) $params['size'] > 0 ? (int) $params['size'] : 6;
+        $level = !empty($params['level']) && array_search($params['level'], array('L', 'M', 'Q', 'H')) !== false ? $params['level'] : 'M';
+ 
+        $urlencoded = 'otpauth://totp/'.$name.'?secret='.$secret.'';
+        if (isset($title)) {
+            $urlencoded .= '&issuer='.$title;
+        }
+        
+        return $urlencoded;
+
+    }
  
     /**
      * Get QR-Code URL for image, from google charts.
@@ -93,15 +119,9 @@ class GoogleAuthenticator
      */
     public function getQRCodeGoogleUrl($name, $secret, $title = null, $params = array())
     {
-        $width = !empty($params['width']) && (int) $params['width'] > 0 ? (int) $params['width'] : 200;
-        $height = !empty($params['height']) && (int) $params['height'] > 0 ? (int) $params['height'] : 200;
 		$size = !empty($params['size']) && (int) $params['size'] > 0 ? (int) $params['size'] : 6;
-        $level = !empty($params['level']) && array_search($params['level'], array('L', 'M', 'Q', 'H')) !== false ? $params['level'] : 'M';
- 
-        $urlencoded = urlencode('otpauth://totp/'.$name.'?secret='.$secret.'');
-        if (isset($title)) {
-            $urlencoded .= urlencode('&issuer='.$title);
-        }
+        
+        $urlencoded = urlencode($this->getQRCodeGoogle($name, $secret, $title, $params));
  
         //return 'https://chart.googleapis.com/chart?chs='.$width.'x'.$height.'&chld='.$level.'|0&cht=qr&chl='.$urlencoded.'';
         if(defined('IN_LitePhp')){
