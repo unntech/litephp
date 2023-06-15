@@ -3,7 +3,7 @@
 namespace LitePhp;
 
 class Lite {
-    const VERSION = '1.0.8';
+    const VERSION = '1.0.7';
     const Framework = 'LitePhp';
     
     /**
@@ -28,6 +28,15 @@ class Lite {
         }
         
         return self::$rootPath;
+    }
+    
+    /**
+     * 设置应用根目录
+     * @param string $path 目录
+     * @return void
+     */
+    public static function setRootPath( string $path){
+        self::$rootPath = $path;
     }
     
     /**
