@@ -37,6 +37,11 @@ class LiCrypt {
         $this -> iv = empty($iv) ? $this->ivstr($key, $ivlen) : $iv;
     }
     
+    public function setSalt($salt = '')
+    {
+        $this->salt = $salt;
+    }
+    
     public function ivstr($key, $ivlen){
 		$str = md5($key);
 		$str = str_pad($str,$ivlen,'=');
