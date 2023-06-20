@@ -10,7 +10,7 @@ class LiCrypt {
     protected $iv;
     protected $salt;
 
-    public function __construct($key = '', $iv = '', $cipher ='des-cfb'){
+    public function __construct($key = '', $iv = '', $cipher ='aes-128-cfb'){
         $this -> cipher = $cipher;
         $this -> ckey = $key;
 		$ivlen = openssl_cipher_iv_length($this -> cipher);
@@ -28,7 +28,7 @@ class LiCrypt {
         return openssl_get_cipher_methods();
     }
     
-    public function setCipher($cipher ='des-cfb'){
+    public function setCipher($cipher ='aes-256-cfb'){
         $this -> cipher = $cipher;
     }
     

@@ -92,7 +92,8 @@ class LiComm {
     }
 
     public static function is_ip($ip) {
-        return preg_match("/^([0-9]{1,3}\.){3}[0-9]{1,3}$/", $ip);
+        //return preg_match("/^([0-9]{1,3}\.){3}[0-9]{1,3}$/", $ip);
+        return filter_var($ip, FILTER_VALIDATE_IP) ? 1 : 0;
     }
     
     public static function ip(){
