@@ -15,10 +15,11 @@ class sqlsrv {
         if($cfg['hostport']!=0 && $cfg['hostport']!=1433){
             $cfg['hostname'] .= ',' .$cfg['hostport'];
         }
-        return $this->connect($cfg['hostname'], $cfg['username'], $cfg['password'], $cfg['dbname'], $cfg['charset']);
+        $TrustServerCertificate = $cfg['TrustServerCertificate'] ?? false;
+        return $this->connect($cfg['hostname'], $cfg['username'], $cfg['password'], $cfg['dbname'], $cfg['charset'], $TrustServerCertificate);
     }
     
-	function connect( $dbhost = 'localhost', $dbuser, $dbpw, $dbname, $dbcharset ) {
+	function connect( $dbhost = 'localhost', $dbuser, $dbpw, $dbname, $dbcharset, $TrustServerCertificate = false ) {
         if(empty($dbcharset)){
 			$dbcharset = 'UTF-8';
 		}
@@ -26,10 +27,12 @@ class sqlsrv {
             'CharacterSet' => $dbcharset,
 			"Database" => $dbname,
 			"Uid" => $dbuser,
-			"PWD" => $dbpw
+			"PWD" => $dbpw,
+            'TrustServerCertificate' => $TrustServerCertificate
 		);
 		//Establishes the connection
 		if ( !$this->connid = sqlsrv_connect( $dbhost, $connectionOptions ) ) {
+            print_r($this->errors());
 			$this->halt( 'Can not connect to MsSQL server' );
 		}
 		return $this->connid;
