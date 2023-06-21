@@ -13,7 +13,7 @@ class qrCode {
     {
         require_once __DIR__ . "/../lib/phpqrcode.php";
 
-        \QRcode::png($text, $outfile, $level, $size, $margin, $saveandprint, $back_color, $fore_color);
+        \LitePhpLib\QRcode::png($text, $outfile, $level, $size, $margin, $saveandprint, $back_color, $fore_color);
 
     }
     
@@ -21,21 +21,21 @@ class qrCode {
     {
         require_once __DIR__ . "/../lib/phpqrcode.php";
 
-        \QRcode::svg($text, $outfile, $level, $size, $margin, $saveandprint, $back_color, $fore_color);
+        \LitePhpLib\QRcode::svg($text, $outfile, $level, $size, $margin, $saveandprint, $back_color, $fore_color);
     }
 
     public static function eps($text, $size = 10, $margin = 1, $level = 'L', $saveandprint=true, $outfile = false, $back_color = 0xFFFFFF, $fore_color = 0x000000)
     {
         require_once __DIR__ . "/../lib/phpqrcode.php";
 
-        \QRcode::eps($text, $outfile, $level, $size, $margin, $saveandprint, $back_color, $fore_color);
+        \LitePhpLib\QRcode::eps($text, $outfile, $level, $size, $margin, $saveandprint, $back_color, $fore_color);
     }
 
     public static function text($text, $size = 10, $margin = 1, $level = 'L', $outfile = false)
     {
         require_once __DIR__ . "/../lib/phpqrcode.php";
 
-        return \QRcode::text($text, $outfile, $level, $size, $margin);
+        return \LitePhpLib\QRcode::text($text, $outfile, $level, $size, $margin);
     }
 
 }
