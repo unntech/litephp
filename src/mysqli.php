@@ -192,6 +192,7 @@ class mysqli {
 			$fields = $this->options['fields'];
 			$condition = $this->options['condition'];
 		}
+        $table = str_replace('.', '`.`', $table);
 		if(!is_array($fields) || empty($fields)){
 			return false;
 		}
@@ -237,6 +238,7 @@ class mysqli {
 			}
 			$condition = $this->options['condition'];
 		}
+        $table = str_replace('.', '`.`', $table);
 		$this->sql = '';
 		$sql = "DELETE FROM `{$table}` ";
 		if(!empty($condition)){
@@ -271,6 +273,7 @@ class mysqli {
 				return false;
 			}
 		}
+        $table = str_replace('.', '`.`', $table);
 		$this->sql = '';
 		if(empty($data)){
 			return false;
@@ -301,6 +304,7 @@ class mysqli {
 				return false;
 			}
 		}
+        $table = str_replace('.', '`.`', $table);
 		$this->sql = '';
 		$d = [];
 		foreach($data as $da){
@@ -358,18 +362,19 @@ class mysqli {
 		}else{
 			$alias = null;
 		}
+        $table = str_replace('.', '`.`', $table);
 		$this->sql = '';
 		if(empty($fields)){
-			$sql = "SELECT ".(empty($alias) ? '' : "{$alias}.")."* FROM {$table} ";
+			$sql = "SELECT ".(empty($alias) ? '' : "{$alias}.")."* FROM `{$table}` ";
 		}else{
 			$ct = gettype($fields);
 			if($ct == 'string'){
 				$fields = preg_replace('/[^A-Za-z0-9_,\. `()\*]/', '', $fields);
-				$sql = "SELECT {$fields} FROM {$table} ";
+				$sql = "SELECT {$fields} FROM `{$table}` ";
 			}elseif($ct == 'array'){
-				$sql = "SELECT ". implode(',', $fields) ." FROM {$table} ";
+				$sql = "SELECT ". implode(',', $fields) ." FROM `{$table}` ";
 			}else{
-				$sql = "SELECT Fields FROM {$table} ";
+				$sql = "SELECT noFields FROM `{$table}` ";
 			}
 		}
 		if(!empty($alias)){
@@ -434,18 +439,19 @@ class mysqli {
 			$fields = $this->options['fields'];
 			$condition = $this->options['condition'];
 		}
+        $table = str_replace('.', '`.`', $table);
 		$this->sql = '';
 		if(empty($fields)){
-			$sql = "SELECT * FROM {$table} ";
+			$sql = "SELECT * FROM `{$table}` ";
 		}else{
 			$ct = gettype($fields);
 			if($ct == 'string'){
 				$fields = preg_replace('/[^A-Za-z0-9_,\. `()\*]/', '', $fields);
-				$sql = "SELECT {$fields} FROM {$table} ";
+				$sql = "SELECT {$fields} FROM `{$table}` ";
 			}elseif($ct == 'array'){
-				$sql = "SELECT ". implode(',', $fields) ." FROM {$table} ";
+				$sql = "SELECT ". implode(',', $fields) ." FROM `{$table}` ";
 			}else{
-				$sql = "SELECT Fields FROM {$table} ";
+				$sql = "SELECT Fields FROM `{$table}` ";
 			}
 		}
 		
@@ -496,12 +502,13 @@ class mysqli {
 			$fields = $this->options['fields'];
 			$condition = $this->options['condition'];
 		}
+        $table = str_replace('.', '`.`', $table);
 		$ct = gettype($fields);
 		if(empty($fields) || $ct != 'string'){
 			return false;
 		}
 		$fields = preg_replace('/[^A-Za-z0-9_,\. `()\*]/', '', $fields);
-		$sql = "SELECT {$fields} FROM {$table} ";
+		$sql = "SELECT {$fields} FROM `{$table}` ";
 		if(!empty($condition)){
 			$ct = gettype($condition);
 			if($ct == 'string'){
@@ -557,8 +564,9 @@ class mysqli {
 			}
 			$condition = $this->options['condition'];
 		}
+        $table = str_replace('.', '`.`', $table);
 		$this->sql = '';
-		$sql = 'SELECT COUNT(*) AS amount FROM '.$table;
+		$sql = "SELECT COUNT(*) AS amount FROM `{$table}`";
 		//if($condition) $sql .= ' WHERE '.$condition;
 		if(!empty($condition)){
 			$ct = gettype($condition);
