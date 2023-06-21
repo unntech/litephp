@@ -6,10 +6,11 @@ class Weixin
 {
     protected $token = '';//token
     protected $encodingAesKey = '';
-    protected $debug = false;//是否debug的状态标示，方便我们在调试的时候记录一些中间数据
+    protected $debug = false; //是否debug的状态标示，方便我们在调试的时候记录一些中间数据
     protected $encrypt = false;
     protected $wxMsgCrypt;
     protected $appId = '';
+    protected $timestamp = 0;
     public $setFlag = false;
     public $msgtype = 'text';   //('text','image','location')
     public $msg = array();
@@ -25,9 +26,15 @@ class Weixin
             require_once __DIR__ . "/../lib/wxMsgCrypt/wxBizMsgCrypt.php";
             $this->wxMsgCrypt = new WXBizMsgCrypt($token, $encodingAesKey, $appId);
         }
+        $this->timestamp = time();
     }
 
-    //获得用户发过来的消息（消息内容和消息类型  ）
+    /**
+     * 获得用户发过来的消息（消息内容和消息类型 ）
+     * @param $data 默认POST RAW数据
+     * @param $getarr 默认GET参数
+     * @return int 0成功 其它为错误代码
+     */
     public function getMsg($data = null, $getarr = null)
     {
         //$postStr = $GLOBALS["HTTP_RAW_POST_DATA"];
@@ -65,14 +72,20 @@ class Weixin
         }
     }
 
-    //回复文本消息
+    /**
+     * 回复文本消息
+     * @param $text
+     * @return string
+     */
     public function makeText($text = '')
     {
-        $CreateTime = time();
+        $CreateTime = $this->timestamp;
         $FuncFlag = $this->setFlag ? 1 : 0;
+        $FromUserName = $this->msg[ 'FromUserName' ] ?? ''; //获取发送方帐号（OpenID）
+        $ToUserName = $this->msg[ 'ToUserName' ] ?? ''; //获取接收方账号
         $textTpl = "<xml>
-            <ToUserName><![CDATA[{$this->msg['FromUserName']}]]></ToUserName>
-            <FromUserName><![CDATA[{$this->msg['ToUserName']}]]></FromUserName>
+            <ToUserName><![CDATA[{$FromUserName}]]></ToUserName>
+            <FromUserName><![CDATA[{$ToUserName}]]></FromUserName>
             <CreateTime>{$CreateTime}</CreateTime>
             <MsgType><![CDATA[text]]></MsgType>
             <Content><![CDATA[%s]]></Content>
@@ -81,14 +94,20 @@ class Weixin
         return sprintf($textTpl, $text, $FuncFlag);
     }
 
-    //根据数组参数回复图文消息
+    /**
+     * 根据数组参数回复图文消息
+     * @param $newsData
+     * @return string
+     */
     public function makeNews($newsData = array())
     {
-        $CreateTime = time();
+        $CreateTime = $this->timestamp;
         $FuncFlag = $this->setFlag ? 1 : 0;
+        $FromUserName = $this->msg[ 'FromUserName' ] ?? ''; //获取发送方帐号（OpenID）
+        $ToUserName = $this->msg[ 'ToUserName' ] ?? ''; //获取接收方账号
         $newTplHeader = "<xml>
-            <ToUserName><![CDATA[{$this->msg['FromUserName']}]]></ToUserName>
-            <FromUserName><![CDATA[{$this->msg['ToUserName']}]]></FromUserName>
+            <ToUserName><![CDATA[{$FromUserName}]]></ToUserName>
+            <FromUserName><![CDATA[{$ToUserName}]]></FromUserName>
             <CreateTime>{$CreateTime}</CreateTime>
             <MsgType><![CDATA[news]]></MsgType>
             <Content><![CDATA[%s]]></Content>
@@ -117,20 +136,106 @@ class Weixin
         return $header . $Content . $footer;
     }
 
-    public function reply($data, $getarr = null)
+    /**
+     * 根据数组参数回复对应类型消息
+     * @param $msgType : image | voice | video | music
+     * @param $data ['content'=>'', 'mediaId'=>'', 'title'=>'', 'description'=>'', 'musicUrl'=>'', 'HQmusicUrl'=>'', 'thumbMediaId'=>'']
+     * @return string
+     */
+    public function makeMessage($msgType, $data = [])
     {
-        if(empty($getarr)){
-            $getarr = $_GET;
+        $CreateTime = $this->timestamp;
+        $FromUserName = $this->msg[ 'FromUserName' ] ?? ''; //获取发送方帐号（OpenID）
+        $ToUserName = $this->msg[ 'ToUserName' ] ?? ''; //获取接收方账号
+        switch ($msgType){
+            case 'image':
+                $textTpl = "<xml>
+            <ToUserName><![CDATA[{$FromUserName}]]></ToUserName>
+            <FromUserName><![CDATA[{$ToUserName}]]></FromUserName>
+            <CreateTime>{$CreateTime}</CreateTime>
+            <MsgType><![CDATA[image]]></MsgType>
+            <Image><MediaId><![CDATA[%s]]></MediaId></Image>
+            </xml>";
+                return sprintf($textTpl, $data['mediaId']);
+                break;
+            case 'voice':
+                $textTpl = "<xml>
+            <ToUserName><![CDATA[{$FromUserName}]]></ToUserName>
+            <FromUserName><![CDATA[{$ToUserName}]]></FromUserName>
+            <CreateTime>{$CreateTime}</CreateTime>
+            <MsgType><![CDATA[voice]]></MsgType>
+            <Voice><MediaId><![CDATA[%s]]></MediaId></Voice>
+            </xml>";
+                return sprintf($textTpl, $data['mediaId']);
+                break;
+            case 'video':
+                $textTpl = "<xml>
+            <ToUserName><![CDATA[{$FromUserName}]]></ToUserName>
+            <FromUserName><![CDATA[{$ToUserName}]]></FromUserName>
+            <CreateTime>{$CreateTime}</CreateTime>
+            <MsgType><![CDATA[video]]></MsgType>
+            <Video>
+              <MediaId><![CDATA[%s]]></MediaId>
+              <Title><![CDATA[%s]]></Title>
+              <Description><![CDATA[%s]]></Description>
+            </Video>
+            </xml>";
+                return sprintf($textTpl, $data['mediaId'], $data['title'], $data['description']);
+                break;
+            case 'music':
+                $textTpl = "<xml>
+            <ToUserName><![CDATA[{$FromUserName}]]></ToUserName>
+            <FromUserName><![CDATA[{$ToUserName}]]></FromUserName>
+            <CreateTime>{$CreateTime}</CreateTime>
+            <MsgType><![CDATA[music]]></MsgType>
+            <Music>
+              <Title><![CDATA[%s]]></Title>
+              <Description><![CDATA[%s]]></Description>
+              <MusicUrl><![CDATA[%s]]></MusicUrl>
+              <HQMusicUrl><![CDATA[%s]]></HQMusicUrl>
+              <ThumbMediaId><![CDATA[%s]]></ThumbMediaId>
+            </Music>
+            </xml>";
+                return sprintf($textTpl, $data['title'], $data['description'], $data['musicUrl'], $data['HQmusicUrl'], $data['thumbMediaId']);
+                break;
+            default:
+                $textTpl = "<xml>
+            <ToUserName><![CDATA[{$FromUserName}]]></ToUserName>
+            <FromUserName><![CDATA[{$ToUserName}]]></FromUserName>
+            <CreateTime>{$CreateTime}</CreateTime>
+            <MsgType><![CDATA[text]]></MsgType>
+            <Content><![CDATA[%s]]></Content>
+            </xml>";
+                return sprintf($textTpl, $data['content']);
+                break;
         }
-        $get_timestamp = $getarr['timestamp'] ?? '';
-        $get_nonce = $getarr['nonce'] ?? '';
 
-        if($this->encrypt){
-            $errCode = $this->wxMsgCrypt->encryptMsg($data, $get_timestamp, $get_nonce, $data);
-        }
-        echo $data;
+
     }
 
+    /**
+     * 输入回复消息
+     * @param $data
+     * @return void
+     */
+    public function reply($data)
+    {
+        $nonce = LiComm::createNonceStr(8);
+
+        if($this->encrypt){
+            $errCode = $this->wxMsgCrypt->encryptMsg($data, $this->timestamp, $nonce, $enData);
+            if($errCode == 0){
+                echo $enData;
+            }
+        }else{
+            echo $data;
+        }
+    }
+
+    /**
+     * 输出空值或原样回显
+     * @return void
+     */
     public function valid()
     {
         if ($this->checkSignature()) {
@@ -144,6 +249,10 @@ class Weixin
         }
     }
 
+    /**
+     * 验证数据签名
+     * @return bool
+     */
     private function checkSignature()
     {
         $signature = $_GET["signature"] ?? '';
