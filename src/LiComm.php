@@ -148,4 +148,18 @@ class LiComm {
             'lat_end' => round(($lat+$d_lat),8) //纬度结束
         );
     }
+
+    /**
+     * 获取一个UUID
+     * @param bool $separator 为false则取消分隔符-
+     * @return string
+     */
+    public static function uuid(bool $separator = true): string
+    {
+        $uuid = UUID::v4();
+        if(!$separator){
+            $uuid = str_replace('-', '', $uuid);
+        }
+        return $uuid;
+    }
 }
