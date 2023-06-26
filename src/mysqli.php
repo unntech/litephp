@@ -840,7 +840,7 @@ class mysqli {
 								}
 							}
 							if(!empty($_v1)){
-                                if($v[0] == 'IN' || $v[0] == 'in'){
+                                if($v[0] == 'IN' || $v[0] == 'in'|| $v[0] == 'not in'|| $v[0] == 'NOT IN'){
                                     $cons[] = "{$k} {$v[0]} (". implode(',', $_v1) . ')';
                                 }else{
                                     $cons[] = "{$k} {$v[0]} ". implode(' AND ', $_v1) . '';
