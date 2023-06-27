@@ -34,6 +34,39 @@ composer require unntech/litephp
 composer update unntech/litephp
 ~~~
 
+目录结构
+~~~
+litephp/
+├── lib                                     #类库
+|   ├── wxMsgCrypt                          #微信消息加密库
+|   ├── phpqrcode.php                       #二维码类库
+├── src                                     #
+|   ├── Config.php                          #Config类
+|   ├── Db.php                              #数据库实例类
+|   ├── GoogleAuthenticator.php             #Google二次验证类
+│   ├── LiComm.php                          #常用函数方法
+│   ├── LiCrypt.php                         #jwt类库，自定义token加解密
+│   ├── LiHttp.php                          #Http基础类，curl
+│   ├── LiRegular.php                       #常用正则
+│   ├── LiRsa.php                           #Rsa加解密
+│   ├── Lite.php                            #Lite基础类
+│   ├── mongodb.php                         #mongodb操作对象类
+│   ├── mysqli.php                          #mysql操作对象类
+│   ├── qrCode.php                          #二维码生成类
+│   ├── Redis.php                           #Redis静态实例类
+│   ├── Session.php                         #Session类
+│   ├── SnowFlake.php                       #雪花生成64位int
+│   ├── sqlsrv.php                          #mssql server 操作对象类
+│   ├── Template.php                        #视图模板文件载入类
+│   ├── Tree.php                            #树型通用类
+│   ├── UUID.php                            #UUID生成器
+│   ├── Validate.php                        #常用数据验证器
+│   ├── Weixin.php                          #微信消息基础类
+├── tests                                   #测试样例，可删除
+├── composer.json                           #
+└── README.md
+~~~
+
 ## 文档
 
 [完全开发手册](#)
