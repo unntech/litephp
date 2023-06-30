@@ -185,7 +185,7 @@ class LiCrypt {
      * @param string $input 需要编码的字符串
      * @return string
      */
-    public static function base64UrlEncode($input)
+    public function base64UrlEncode($input)
     {
         return str_replace('=', '', strtr(base64_encode($input), '+/', '-_'));
     }
@@ -195,7 +195,7 @@ class LiCrypt {
      * @param string $input 需要解码的字符串
      * @return bool|string
      */
-    public static function base64UrlDecode($input)
+    public function base64UrlDecode($input)
     {
         $remainder = strlen($input) % 4;
         if ($remainder) {

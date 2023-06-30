@@ -6,6 +6,7 @@
  *
  * Notice:Only accepts a single block. Block size is equal to the RSA key size! 
  * 如密钥长度为1024 bit，则加密时数据需小于128字节，加上PKCS1Padding本身的11字节信息，所以明文需小于117字节
+ * 超过长度已自动分割加密后拼合返回 @data 2023/06/30
  *
  * @author: UNN.tech
  * @version: 1.0.1
@@ -18,6 +19,8 @@ class LiRsa {
     protected $pubKey = null;
     protected $priKey = null;
     protected $thirdPubKey = '';
+    protected $algorithm = OPENSSL_ALGO_SHA256;
+    protected $private_key_bits = 1024;
     /**
      * 自定义错误处理
      */
@@ -30,7 +33,7 @@ class LiRsa {
      * @param string 公钥文件（验签和加密时传入）
      * @param string 私钥文件（签名和解密时传入）
      */
-    public function __construct( $public_key_file = '', $private_key_file = '', $isFile = false ) {
+    public function __construct( $public_key_file = '', $private_key_file = '', $isFile = false, $private_key_bits = 1024 ) {
         if ( $isFile ) {
             $this->_getPublicKey( $public_key_file );
             $this->_getPrivateKey( $private_key_file );
@@ -38,6 +41,7 @@ class LiRsa {
             $this->pubKey = "-----BEGIN PUBLIC KEY-----\n" . wordwrap($public_key_file, 64, "\n", true) . "\n-----END PUBLIC KEY-----";
             $this->priKey = "-----BEGIN RSA PRIVATE KEY-----\n" . wordwrap( $private_key_file, 64, "\n", true ) . "\n-----END RSA PRIVATE KEY-----";
         }
+        $this->private_key_bits = $private_key_bits;
     }
     
     public function setRsaKey($pubkey,$prikey,$one=false){
@@ -48,6 +52,26 @@ class LiRsa {
             $this->pubKey = $pubkey;
             $this->priKey = $prikey;
         }
+    }
+
+    /**
+     * 设置密钥长度
+     * @param int $bits
+     * @return void
+     */
+    public function private_key_bits(int $bits = 1024)
+    {
+        $this->private_key_bits = $bits;
+    }
+
+    /**
+     * 设置RSA签名算法
+     * @param $algorithm
+     * @return void
+     */
+    public function setAlgorithm($algorithm = OPENSSL_ALGO_SHA1)
+    {
+        $this->algorithm = $algorithm;
     }
     
     /**
@@ -61,7 +85,7 @@ class LiRsa {
         $priKey = $this->priKey;
         //echo $priKey;
         $ret = false;
-        if ( openssl_sign( $data, $ret, $priKey, OPENSSL_ALGO_SHA256 ) ) {
+        if ( openssl_sign( $data, $ret, $priKey, $this->algorithm ) ) {
             $ret = $this->_encode( $ret, $code );
         }
         return $ret;
@@ -106,7 +130,7 @@ class LiRsa {
         $ret = false;
         $sign = $this->_decode( $sign, $code );
         if ( $sign !== false ) {
-            switch ( openssl_verify( $data, $sign, $pubkey , OPENSSL_ALGO_SHA256 ) ) {
+            switch ( openssl_verify( $data, $sign, $pubkey , $this->algorithm ) ) {
                 case 1:
                     $ret = true;
                     break;
@@ -134,8 +158,16 @@ class LiRsa {
         }
         $ret = false;
         if ( !$this->_checkPadding( $padding, 'en' ) )$this->_error( 'padding error' );
-        if ( openssl_public_encrypt( $data, $result, $pubkey, $padding ) ) {
-            $ret = $this->_encode( $result, $code );
+        $length = (int)($this->private_key_bits / 8 - 11);
+        $crypto = '';
+        foreach (str_split($data, $length) as $chunk){
+            $result = '';
+            if (openssl_public_encrypt( $chunk, $result, $pubkey, $padding ) ) {
+                $crypto .= $result;
+            }
+        }
+        if ($crypto != '') {
+            $ret = $this->_encode( $crypto, $code );
         }
         return $ret;
     }
@@ -153,9 +185,13 @@ class LiRsa {
         $data = $this->_decode( $data, $code );
         if ( !$this->_checkPadding( $padding, 'de' ) )$this->_error( 'padding error' );
         if ( $data !== false ) {
-            if ( openssl_private_decrypt( $data, $result, $this->priKey, $padding ) ) {
-                $ret = $rev ? rtrim( strrev( $result ), "\0" ) : '' . $result;
+            $length = (int)($this->private_key_bits / 8);
+            $crypto = '';
+            foreach (str_split($data, $length) as $chunk) {
+                openssl_private_decrypt($chunk, $decryptData, $this->priKey, $padding);
+                $crypto .= $decryptData;
             }
+            $ret = $rev ? rtrim( strrev( $crypto ), "\0" ) : '' . $crypto;
         }
         return $ret;
     }
@@ -176,13 +212,13 @@ class LiRsa {
      *
      * @return 公私钥
      */
-    
-    public function createKey(){
-        $config = array(
-            "digest_alg" => "sha512",
-            "private_key_bits" =>2048,
+
+    public function createKey(array $options = []){
+        $config = empty($options) ? [
+            "digest_alg" => "SHA256",
+            "private_key_bits" =>$this->private_key_bits,
             "private_key_type" => OPENSSL_KEYTYPE_RSA
-        );
+        ] : $options;
  
  
         //创建密钥对

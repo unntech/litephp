@@ -162,4 +162,29 @@ class LiComm {
         }
         return $uuid;
     }
+    
+    /**
+     * base64UrlEncode   https://jwt.io/  中base64UrlEncode编码实现
+     * @param string $input 需要编码的字符串
+     * @return string
+     */
+    public static function base64UrlEncode($input): string
+    {
+        return str_replace('=', '', strtr(base64_encode($input), '+/', '-_'));
+    }
+
+    /**
+     * base64UrlEncode  https://jwt.io/  中base64UrlEncode解码实现
+     * @param string $input 需要解码的字符串
+     * @return bool|string
+     */
+    public static function base64UrlDecode($input): string
+    {
+        $remainder = strlen($input) % 4;
+        if ($remainder) {
+            $addlen = 4 - $remainder;
+            $input .= str_repeat('=', $addlen);
+        }
+        return base64_decode(strtr($input, '-_', '+/'));
+    }
 }
