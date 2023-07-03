@@ -15,8 +15,13 @@ class LiHttp {
             curl_setopt( $ch, CURLOPT_HTTPHEADER, $pHeader);
         }
         curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
-        curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, false );
-        curl_setopt( $ch, CURLOPT_SSL_VERIFYHOST, false );
+        if(strtolower(parse_url($url, PHP_URL_SCHEME)) == 'https'){
+            curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, true );
+            curl_setopt( $ch, CURLOPT_SSL_VERIFYHOST, 2 );
+        }else{
+            curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, false );
+            curl_setopt( $ch, CURLOPT_SSL_VERIFYHOST, 0 );
+        }
         curl_setopt( $ch, CURLOPT_USERAGENT, 'Mozilla/5.0' );
         $strRes = curl_exec( $ch );
         curl_close( $ch );
@@ -34,8 +39,13 @@ class LiHttp {
             curl_setopt( $ch, CURLOPT_HTTPHEADER, $pHeader);
         }
         curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
-        curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, false );
-        curl_setopt( $ch, CURLOPT_SSL_VERIFYHOST, false );
+        if(strtolower(parse_url($url, PHP_URL_SCHEME)) == 'https'){
+            curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, true );
+            curl_setopt( $ch, CURLOPT_SSL_VERIFYHOST, 2 );
+        }else{
+            curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, false );
+            curl_setopt( $ch, CURLOPT_SSL_VERIFYHOST, 0 );
+        }
         curl_setopt( $ch, CURLOPT_POST, true );
         curl_setopt( $ch, CURLOPT_POSTFIELDS, $data );
         curl_setopt( $ch, CURLOPT_USERAGENT, 'Mozilla/5.0' );

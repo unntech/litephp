@@ -20,7 +20,7 @@ LitePhp的公共库，需先创建LiteApp 或LiteApi项目使用
 * 统一和精简大量用法
 
 
-> LitePhp 1.0的运行环境要求PHP7.0+，兼容PHP8.1
+> LitePhp 1.0的运行环境要求PHP7.2+，兼容PHP8
 
 ## 安装
 

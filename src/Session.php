@@ -21,7 +21,7 @@ class Session
     {
         self::$save = $option['save'] ?? 'file';
         if(empty($_COOKIE['LSESSID'])){
-            self::$session_id = uniqid() . dechex(SnowFlake::generateParticle());
+            self::$session_id = $_SERVER['UNIQUE_ID'] ?? uniqid() . dechex(SnowFlake::generateParticle());
             setcookie('LSESSID', self::$session_id, 0, '/');
         }else{
             self::$session_id = $_COOKIE['LSESSID'];
