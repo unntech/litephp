@@ -20,7 +20,7 @@ class CorpWeixin
         $this->encodingAesKey = $encodingAesKey;
         $this->appId = $appId;
         $this->AgentID = $AgentID;
-        require_once __DIR__ . "/../lib/corpMsgCrypt/WXBizMsgCrypt.php";
+        require_once __DIR__ . "/../lib/wxMsgCrypt/wxBizMsgCrypt.php";
         $this->wxMsgCrypt = new WXBizMsgCrypt($token, $encodingAesKey, $appId);
         $this->timestamp = time();
     }
@@ -76,7 +76,7 @@ class CorpWeixin
         $get_nonce = $_GET['nonce'] ?? '';
 
         $sMsg = "";  // 解析之后的明文
-        $errCode = $this->wxMsgCrypt->DecryptMsg($get_msg_signature, $get_timestamp, $get_nonce, $postStr, $sMsg);
+        $errCode = $this->wxMsgCrypt->decryptMsg($get_msg_signature, $get_timestamp, $get_nonce, $postStr, $sMsg);
         if ($errCode == 0) {
             $this->msg = (array)simplexml_load_string($sMsg, 'SimpleXMLElement', LIBXML_NOCDATA);
             $this->msgtype = strtolower($this->msg['MsgType']);
@@ -111,7 +111,7 @@ class CorpWeixin
     {
         $nonce = LiComm::createNonceStr(8);
 
-        $errCode = $this->wxMsgCrypt->EncryptMsg($data, $this->timestamp, $nonce, $enData);
+        $errCode = $this->wxMsgCrypt->encryptMsg($data, $this->timestamp, $nonce, $enData);
         if($errCode == 0){
             echo $enData;
         }else{

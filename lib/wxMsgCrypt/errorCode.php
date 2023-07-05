@@ -9,7 +9,7 @@ namespace LitePhp;
  *    <li>-40002: xml解析失败</li>
  *    <li>-40003: sha加密生成签名失败</li>
  *    <li>-40004: encodingAesKey 非法</li>
- *    <li>-40005: appid 校验错误</li>
+ *    <li>-40005: appid / corpid 校验错误</li>
  *    <li>-40006: aes 加密失败</li>
  *    <li>-40007: aes 解密失败</li>
  *    <li>-40008: 解密后得到的buffer非法</li>
@@ -26,6 +26,7 @@ class ErrorCode
 	public static $ComputeSignatureError = -40003;
 	public static $IllegalAesKey = -40004;
 	public static $ValidateAppidError = -40005;
+    public static $ValidateCorpidError = -40005;
 	public static $EncryptAESError = -40006;
 	public static $DecryptAESError = -40007;
 	public static $IllegalBuffer = -40008;

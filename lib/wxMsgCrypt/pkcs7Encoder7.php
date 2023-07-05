@@ -45,7 +45,7 @@ class PKCS7Encoder
     {
 
         $pad = ord(substr($text, -1));
-        if ($pad < 1 || $pad > 32) {
+        if ($pad < 1 || $pad > PKCS7Encoder::$block_size) {
             $pad = 0;
         }
         return substr($text, 0, (strlen($text) - $pad));
@@ -60,11 +60,14 @@ class PKCS7Encoder
  */
 class Prpcrypt
 {
-    public $key;
+    public $key = null;
+    public $iv = null;
 
     function __construct($k)
     {
-        $this->key = base64_decode($k . "=");
+        $this->key = base64_decode($k . '=');
+        $this->iv = substr($this->key, 0, 16);
+
     }
 
     /**
@@ -79,13 +82,12 @@ class Prpcrypt
             $random = $this->getRandomStr();
             $text = $random . pack("N", strlen($text)) . $text . $appid;
 
-            $iv = substr($this->key, 0, 16);
             //使用自定义的填充方式对明文进行补位填充
             $pkc_encoder = new PKCS7Encoder;
             $text = $pkc_encoder->encode($text);
-            $encrypted = openssl_encrypt($text, 'AES-256-CBC', $this->key, OPENSSL_RAW_DATA|OPENSSL_ZERO_PADDING, $iv);
+            $encrypted = openssl_encrypt($text, 'AES-256-CBC', $this->key, OPENSSL_RAW_DATA|OPENSSL_ZERO_PADDING, $this->iv);
             return array(ErrorCode::$OK, base64_encode($encrypted));
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             //print $e;
             return array(ErrorCode::$EncryptAESError, null);
         }
@@ -100,10 +102,9 @@ class Prpcrypt
     {
 
         try {
-            $iv = substr($this->key, 0, 16);
             //使用BASE64对需要解密的字符串进行解码
-            $decrypted = openssl_decrypt(base64_decode($encrypted), 'AES-256-CBC', $this->key, OPENSSL_RAW_DATA|OPENSSL_ZERO_PADDING, $iv);
-        } catch (Exception $e) {
+            $decrypted = openssl_decrypt(base64_decode($encrypted), 'AES-256-CBC', $this->key, OPENSSL_RAW_DATA|OPENSSL_ZERO_PADDING, $this->iv);
+        } catch (\Throwable $e) {
             return array(ErrorCode::$DecryptAESError, null);
         }
 
