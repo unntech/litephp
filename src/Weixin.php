@@ -43,6 +43,9 @@ class Weixin
         }else{
             $postStr = $data;
         }
+        if(empty($postStr)){
+            return -1;
+        }
 
         if(empty($getarr)){
             $getarr = $_GET;
