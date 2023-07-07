@@ -2,6 +2,8 @@
 
 namespace LitePhp;
 
+require_once __DIR__ . "/../lib/wxMsgCrypt/wxBizMsgCrypt.php";
+
 class Weixin
 {
     protected $token = '';//token
@@ -23,7 +25,6 @@ class Weixin
         $this->encrypt = $encrypt;
         $this->appId = $appId;
         if($encrypt){
-            require_once __DIR__ . "/../lib/wxMsgCrypt/wxBizMsgCrypt.php";
             $this->wxMsgCrypt = new WXBizMsgCrypt($token, $encodingAesKey, $appId);
         }
         $this->timestamp = time();

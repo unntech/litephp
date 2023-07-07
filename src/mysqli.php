@@ -530,7 +530,7 @@ class mysqli {
 		$query = $this->query($sql);
 		$r = $this->fetch_row($query);
 		$this->free_result($query);
-		return $r[0];
+		return $r ? $r[0] : null;
 	}
 	
 	public function get_value($sql) {
@@ -539,7 +539,7 @@ class mysqli {
 		$query = $this->query($sql);
 		$r = $this->fetch_row($query);
 		$this->free_result($query);
-		return $r[0];
+		return $r ? $r[0] : null;
 	}
     
     public function get_rows($sql, $indexfield=''){

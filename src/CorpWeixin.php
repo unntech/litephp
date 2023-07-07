@@ -2,6 +2,8 @@
 
 namespace LitePhp;
 
+require_once __DIR__ . "/../lib/wxMsgCrypt/wxBizMsgCrypt.php";
+
 class CorpWeixin
 {
     protected $token = '';//token
@@ -20,7 +22,6 @@ class CorpWeixin
         $this->encodingAesKey = $encodingAesKey;
         $this->appId = $appId;
         $this->AgentID = $AgentID;
-        require_once __DIR__ . "/../lib/wxMsgCrypt/wxBizMsgCrypt.php";
         $this->wxMsgCrypt = new WXBizMsgCrypt($token, $encodingAesKey, $appId);
         $this->timestamp = time();
     }
