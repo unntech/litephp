@@ -50,7 +50,11 @@ class mysqli {
 	}
 
 	public function query($sql) {
-		if(!($query = mysqli_query($this->connid, $sql))) $this->halt('MySQL Query Error', $sql);
+		try {
+            if(!($query = mysqli_query($this->connid, $sql))) $this->halt('MySQL Query Error', $sql);
+        }catch (\Throwable $e){
+            $this->exception($e, $sql);
+        }
 		$this->querynum++;
 		$this->query_finished = true;
 		$this->resultObj = $query;
@@ -631,9 +635,31 @@ class mysqli {
 		return intval($this->error());
 	}
 
-	public function halt($message = '', $sql = '')	{
-		if($message && DT_DEBUG) echo "\t\t<query>".$sql."</query>\n\t\t<errno>".$this->errno()."</errno>\n\t\t<error>".$this->error()."</error>\n\t\t<errmsg>".$message."</errmsg>\n";
+	protected function halt($message = '', $sql = '')	{
+		if(DT_DEBUG){
+            echo "\t\t<query>".$sql."</query>\n\t\t<errno>".$this->errno()."</errno>\n\t\t<error>".$this->error()."</error>\n\t\t<errmsg>".$message."</errmsg>\n";
+        }else{
+            echo $message;
+        }
 	}
+
+    protected function exception(\Throwable $e, $sql)
+    {
+        if (DT_DEBUG) {
+            $html = '<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"><title>HTTP 500</title><style>body{margin: 0 auto;} .header{background: #6c757d; color: #eee; padding: 50px 15px 30px 15px;line-height: 1.5rem} .sql{background: #cce5ff; color: #004085; padding: 15px 15px;line-height: 1.5rem} .msg{padding: 15px 15px;line-height: 1.25rem}</style></head><body>';
+            $html .= '<div class="header"><h3>' . $e->getMessage() . '</h3>Code: ' . $e->getCode() . '<BR>File: ' . $e->getFile() . '<BR>Line: ' . $e->getLine() . '</div>';
+            $html .= '<div class="sql">Sql: ' .$sql. '</div>';
+            $html .= '<div class="msg">' . dv($e, false) . '</div>';
+            $html .= '</body></html>';
+            echo $html;
+        } else {
+            $msg = $e->getCode() . ': ' . $e->getMessage();
+            $html = '<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"><title>HTTP 500</title><style>body{background-color:#444;font-size:16px;}h3{font-size:32px;color:#eee;text-align:center;padding-top:50px;font-weight:normal;}</style></head>';
+            $html .= '<body><h3>' . $msg . '</h3></body></html>';
+            echo $html;
+        }
+        exit(0);
+    }
 	
 	/*
 	 * 检查是否为注入
