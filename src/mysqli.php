@@ -442,11 +442,15 @@ class mysqli {
 			}
 			$fields = $this->options['fields'];
 			$condition = $this->options['condition'];
-		}
+            $param = $this->options['param'];
+            $alias = $this->options['alias'];
+		}else{
+            $alias = null;
+        }
         $table = str_replace('.', '`.`', $table);
 		$this->sql = '';
 		if(empty($fields)){
-			$sql = "SELECT * FROM `{$table}` ";
+            $sql = "SELECT ".(empty($alias) ? '' : "{$alias}.")."* FROM `{$table}` ";
 		}else{
 			$ct = gettype($fields);
 			if($ct == 'string'){
@@ -458,7 +462,16 @@ class mysqli {
 				$sql = "SELECT Fields FROM `{$table}` ";
 			}
 		}
-		
+
+        if(!empty($alias)){
+            $sql .= "AS {$alias} ";
+        }
+
+        if(!empty($param['JOIN'])){
+            $str = preg_replace('/[^A-Za-z0-9_,\. `=]/', '', $param['JOIN']);
+            $sql .= " {$str} ";
+        }
+
 		if(!empty($condition)){
 			$ct = gettype($condition);
 			if($ct == 'string'){
@@ -472,6 +485,15 @@ class mysqli {
 				return false;
 			}
 		}
+
+        if(!empty($param['GROUPBY'])){
+            $str = preg_replace('/[^A-Za-z0-9_,\. `]/', '', $param['GROUPBY']);
+            $sql .= " GROUP BY " .$str;
+        }
+        if(!empty($param['ORDER'])){
+            $str = preg_replace('/[^A-Za-z0-9_,\. `]/', '', $param['ORDER']);
+            $sql .= " ORDER BY " .$str;
+        }
 		
 		$sql .= " LIMIT 1";
 		
