@@ -527,14 +527,28 @@ class mysqli {
 			}
 			$fields = $this->options['fields'];
 			$condition = $this->options['condition'];
+            $param = $this->options['param'];
+            $alias = $this->options['alias'];
 		}
         $table = str_replace('.', '`.`', $table);
+        $this->sql = '';
 		$ct = gettype($fields);
 		if(empty($fields) || $ct != 'string'){
 			return false;
 		}
 		$fields = preg_replace('/[^A-Za-z0-9_,\. `()\*]/', '', $fields);
+        $fields = $this->_fieldsAddAlais($fields);
 		$sql = "SELECT {$fields} FROM `{$table}` ";
+
+        if(!empty($alias)){
+            $sql .= "AS {$alias} ";
+        }
+
+        if(!empty($param['JOIN'])){
+            $str = preg_replace('/[^A-Za-z0-9_,\. `=]/', '', $param['JOIN']);
+            $sql .= " {$str} ";
+        }
+
 		if(!empty($condition)){
 			$ct = gettype($condition);
 			if($ct == 'string'){
@@ -548,6 +562,16 @@ class mysqli {
 				return false;
 			}
 		}
+
+        if(!empty($param['GROUPBY'])){
+            $str = preg_replace('/[^A-Za-z0-9_,\. `]/', '', $param['GROUPBY']);
+            $sql .= " GROUP BY " .$str;
+        }
+        if(!empty($param['ORDER'])){
+            $str = preg_replace('/[^A-Za-z0-9_,\. `]/', '', $param['ORDER']);
+            $sql .= " ORDER BY " .$str;
+        }
+
 		$sql .= " LIMIT 1";
 		
 		$this->sql = $sql;
@@ -794,17 +818,25 @@ class mysqli {
 			return $fields;
 		}
 		$ct = gettype($fields);
-		if($ct == 'array'){
-			$_fields = [];
-			foreach($fields as $k=>$v){
-				if(false === strpos($v, '.')){
-					$_fields[] = $this->options['alias'] .'.'.$v;
-				}else{
-					$_fields[] = $v;
-				}
-			}
-			$fields = $_fields;
-		}
+        switch ($ct){
+            case 'array':
+                $_fields = [];
+                foreach($fields as $k=>$v){
+                    if(false === strpos($v, '.')){
+                        $_fields[] = $this->options['alias'] .'.'.$v;
+                    }else{
+                        $_fields[] = $v;
+                    }
+                }
+                $fields = $_fields;
+                break;
+            case 'string':
+                if(false === strpos($fields, '.')) {
+                    $fields = $this->options['alias'] . '.' . $fields;
+                }
+                break;
+        }
+
 		return $fields;
 	}
 
