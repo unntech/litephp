@@ -173,4 +173,34 @@ class LiHttp {
         exit(0);
     }
     
+    public static function getCertificateInformation(string $domain, int $port=443)
+    {
+        if(empty($domain)){
+            return false;
+        }
+        // 创建一个流上下文，其中包含一个ssl选项，该选项用于捕获对等证书。
+        $streamContext = stream_context_create(["ssl" => ["capture_peer_cert" => true]]);
+        // 使用stream_socket_client函数建立一个安全的SSL连接。连接的目标是在指定的域名后面的端口443上建立连接。函数的参数包括域名，错误号，错误消息，超时时间，连接选项和流上下文。
+        $secureConnection = stream_socket_client("ssl://{$domain}:{$port}", $errno, $errstr, 30, STREAM_CLIENT_CONNECT, $streamContext);
+
+        if (!$secureConnection) {
+            return false;
+        }
+        // 获取流上下文参数中的SSL信息，并将其赋值给$sslInfo变量。
+        $sslInfo = stream_context_get_params($secureConnection);
+        //使用openssl_x509_parse函数来解析传入的SSL证书。它首先从$sslInfo数组中获取"options"下的"ssl"数组，然后从中获取"peer_certificate"字段的值，即对等证书。然后将该证书作为参数传递给openssl_x509_parse函数，该函数将解析证书并返回一个关联数组$certInfo，包含了证书的各种信息。
+        $certInfo = openssl_x509_parse($sslInfo["options"]["ssl"]["peer_certificate"]);
+
+        return $certInfo;
+    }
+
+    public static function getCertificateExpirationTime(string $domain, int $port=443)
+    {
+        $certInfo = self::getCertificateInformation($domain, $port);
+        if($certInfo == false){
+            return false;
+        }
+
+        return $certInfo["validTo_time_t"] ?? false;
+    }
 }
