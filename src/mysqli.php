@@ -55,7 +55,9 @@ class mysqli {
         try {
             if(!($query = mysqli_query($this->connid, $sql))) $this->halt('MySQL Query Error', $sql);
         }catch (\Throwable $e){
-            $this->exception($e, $sql);
+            if(!in_array($e->getCode(), [1032,1062])){
+                $this->exception($e, $sql);
+            }
         }
         $this->querynum++;
         $this->query_finished = true;
