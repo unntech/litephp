@@ -30,6 +30,12 @@ abstract class Model
      * @var string
      */
     protected $table;
+    
+    /**
+     * 数据表后缀（默认为空）
+     * @var string
+     */
+    protected $suffix;
 
     /**
      * 初始化过的模型.
@@ -159,6 +165,9 @@ abstract class Model
                 $_t = substr($_t, 1);
             }
             $this->table = strtolower($_t);
+        }
+        if(!empty($this->suffix)){
+            $this->table .= $this->suffix;
         }
         if(!empty($this->pk)){
             $this->key = $this->pk;

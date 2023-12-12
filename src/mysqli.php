@@ -818,6 +818,18 @@ class mysqli {
                     $_v = $v ? '1 ' : '0 ';
                     $ufields[] = "{$k} = ". $_v ;
                     break;
+                case 'array':
+                    $_v0 = strtoupper($v[0]);
+                    switch ($_v0){
+                        case 'INC':
+                            $ufields[] = "{$k} = {$k} + {$v[1]}";
+                            break;
+                        case 'DEC':
+                            $ufields[] = "{$k} = {$k} - {$v[1]}";
+                            break;
+                        default:
+                    }
+                    break;
                 case 'NULL':
                     $ufields[] = "{$k} = NULL ";
                     break;
