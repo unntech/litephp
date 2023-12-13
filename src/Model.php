@@ -35,7 +35,7 @@ abstract class Model
      * 数据表后缀（默认为空）
      * @var string
      */
-    protected $suffix;
+    protected $suffix = '';
 
     /**
      * 初始化过的模型.
@@ -166,9 +166,6 @@ abstract class Model
             }
             $this->table = strtolower($_t);
         }
-        if(!empty($this->suffix)){
-            $this->table .= $this->suffix;
-        }
         if(!empty($this->pk)){
             $this->key = $this->pk;
         }
@@ -180,7 +177,7 @@ abstract class Model
         }
 
         self::setDb(Db::$db);
-        self::$db->table($this->table);
+        self::$db->table($this->table . $this->suffix);
 
         // 执行初始化操作
         $this->initialize();
@@ -204,7 +201,7 @@ abstract class Model
     public function db()
     {
 
-        $query = self::$db->table($this->table);
+        $query = self::$db->table($this->table . $this->suffix);
 
         // 返回当前模型的数据库查询对象
         return $query;
@@ -262,6 +259,16 @@ abstract class Model
     public function isEmpty(): bool
     {
         return empty($this->data);
+    }
+    
+    /**
+     * 设置数据表后缀
+     * @param string $suffix
+     * @return void
+     */
+    public function setSuffix(string $suffix)
+    {
+        $this->suffix = $suffix;
     }
 
     /**
