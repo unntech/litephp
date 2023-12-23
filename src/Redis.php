@@ -3,7 +3,11 @@
 namespace LitePhp;
 
 class Redis {
-    public static $pre, $redis;
+    public static $pre;
+    /**
+     * @var \redis()
+     */
+    public static $redis;
     
     /**
      * 构造方法
@@ -64,6 +68,12 @@ class Redis {
     public static function expire($key, $ttl=0){
         
         return self::$redis->expire(self::$pre.$key, $ttl);
+        
+    }
+    
+    public static function georadius($key, $longitude, $latitude, $radius, $unit, array $options = null){
+
+        return self::$redis->geoRadius($key, $longitude, $latitude, $radius, $unit, $options);
         
     }
 

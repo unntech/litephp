@@ -90,7 +90,7 @@ class mysqli {
     /*
      * 面向对象 链式操作
      */
-    public function table($table, $alias= null)
+    public function table($table, $alias= null): mysqli
     {
         if(empty($table)){
             return false;
@@ -118,7 +118,7 @@ class mysqli {
         return $this;
     }
 
-    public function where($condition)
+    public function where($condition): mysqli
     {
         if(is_array($condition)){
             if(!empty($this->options['condition']) && !is_array($this->options['condition'])){
