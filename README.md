@@ -41,7 +41,10 @@ litephp/
 |   ├── wxMsgCrypt                          #微信消息加密库
 |   ├── phpqrcode.php                       #二维码类库
 ├── src                                     #
+|   ├── gif                                 #gif图像类库
+|   ├── Image.php                           #图像处理类库
 |   ├── Config.php                          #Config类
+|   ├── CorpWeixin.php                      #企业微信消息推送加解密类库
 |   ├── Db.php                              #数据库实例类
 |   ├── GoogleAuthenticator.php             #Google二次验证类
 │   ├── LiComm.php                          #常用函数方法
@@ -52,6 +55,7 @@ litephp/
 │   ├── Lite.php                            #Lite基础类
 │   ├── mongodb.php                         #mongodb操作对象类
 │   ├── mysqli.php                          #mysql操作对象类
+│   ├── Model.php                           #Model模型基础类
 │   ├── qrCode.php                          #二维码生成类
 │   ├── Redis.php                           #Redis静态实例类
 │   ├── Session.php                         #Session类

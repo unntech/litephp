@@ -36,6 +36,8 @@ abstract class Model
      * @var string
      */
     protected $suffix = '';
+    
+    protected $data, $origin;
 
     /**
      * 初始化过的模型.

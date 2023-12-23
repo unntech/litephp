@@ -188,4 +188,16 @@ class LiComm {
         }
         return base64_decode(strtr($input, '-_', '+/'));
     }
+    
+    /**
+     * 获取从当天0点起的秒数，0 - 86400
+     * @return int
+     */
+    public static function getSecondInDay(): int
+    {
+        $DT_TIME = time();
+        $today = getdate($DT_TIME);
+        $tbtime = mktime( 0, 0, 0, $today[ 'mon' ], $today[ 'mday' ], $today[ 'year' ] );
+        return $DT_TIME - $tbtime;
+    }
 }

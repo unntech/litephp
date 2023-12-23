@@ -650,11 +650,20 @@ class mysqli {
                 return false;
             }
             $condition = $this->options['condition'];
+            $param = $this->options['param'];
+            $alias = $this->options['alias'];
         }
         $table = str_replace('.', '`.`', $table);
         $this->sql = '';
         $sql = "SELECT COUNT(*) AS amount FROM `{$table}`";
-        //if($condition) $sql .= ' WHERE '.$condition;
+        if(!empty($alias)){
+            $sql .= "AS {$alias} ";
+        }
+
+        if(!empty($param['JOIN'])){
+            $str = preg_replace('/[^A-Za-z0-9_,\. `=]/', '', $param['JOIN']);
+            $sql .= " {$str} ";
+        }
         if(!empty($condition)){
             $ct = gettype($condition);
             if($ct == 'string'){
@@ -672,6 +681,12 @@ class mysqli {
         $this->sql = $sql;
         $r = $this->get_one($sql);
         return $r ? $r['amount'] : 0;
+    }
+    
+    public function tableExists($tableName)
+    {
+        $res = $this->query("SHOW TABLES LIKE '{$tableName}'");
+        return $res->num_rows > 0 ;
     }
 
     public function fetch_array($query, $result_type = MYSQLI_ASSOC)

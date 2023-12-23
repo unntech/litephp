@@ -3,7 +3,7 @@
 namespace LitePhp;
 
 class Lite {
-    const VERSION = '1.0.10';
+    const VERSION = '1.0.11';
     const Framework = 'LitePhp';
     
     /**
