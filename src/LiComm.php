@@ -191,11 +191,12 @@ class LiComm {
     
     /**
      * 获取从当天0点起的秒数，0 - 86400
+     * @param int $dt 0:当前时间，其它为指定时间
      * @return int
      */
-    public static function getSecondInDay(): int
+    public static function getSecondInDay($dt = 0): int
     {
-        $DT_TIME = time();
+        $DT_TIME = $dt == 0 ? time() : $dt;
         $today = getdate($DT_TIME);
         $tbtime = mktime( 0, 0, 0, $today[ 'mon' ], $today[ 'mday' ], $today[ 'year' ] );
         return $DT_TIME - $tbtime;
