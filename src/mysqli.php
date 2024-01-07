@@ -403,7 +403,7 @@ class mysqli {
         }else{
             $ct = gettype($fields);
             if($ct == 'string'){
-                $fields = preg_replace('/[^A-Za-z0-9_,\. `()\*]/', '', $fields);
+                $fields = preg_replace('/[^A-Za-z0-9_,\-\. `()\*]/', '', $fields);
                 $sql = "SELECT {$fields} FROM `{$table}` ";
             }elseif($ct == 'array'){
                 $sql = "SELECT ". implode(',', $fields) ." FROM `{$table}` ";
@@ -485,7 +485,7 @@ class mysqli {
         }else{
             $ct = gettype($fields);
             if($ct == 'string'){
-                $fields = preg_replace('/[^A-Za-z0-9_,\. `()\*]/', '', $fields);
+                $fields = preg_replace('/[^A-Za-z0-9_,\-\. `()\*]/', '', $fields);
                 $sql = "SELECT {$fields} FROM `{$table}` ";
             }elseif($ct == 'array'){
                 $sql = "SELECT ". implode(',', $fields) ." FROM `{$table}` ";
@@ -570,7 +570,7 @@ class mysqli {
         if(empty($fields) || $ct != 'string'){
             return false;
         }
-        $fields = preg_replace('/[^A-Za-z0-9_,\. `()\*]/', '', $fields);
+        $fields = preg_replace('/[^A-Za-z0-9_,\-\. `()\*]/', '', $fields);
         $fields = $this->_fieldsAddAlais($fields);
         $sql = "SELECT {$fields} FROM `{$table}` ";
 
