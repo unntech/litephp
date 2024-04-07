@@ -984,7 +984,11 @@ class mysqli {
                 case 'array':
                     switch(gettype($v[1])){
                         case 'string':
-                            $cons[] = $k . " {$v[0]} '" .$this->escape_string($v[1]). "'";
+                            if($v[0] == 'MATCH' || $v[0] == 'match'){
+                                $cons[] = "MATCH({$k}) AGAINST('".$this->escape_string($v[1])."')";
+                            }else{
+                                $cons[] = $k . " {$v[0]} '" .$this->escape_string($v[1]). "'";
+                            }
                             break;
                         case 'integer':
                             $cons[] = "{$k} {$v[0]} {$v[1]}";
