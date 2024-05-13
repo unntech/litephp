@@ -61,8 +61,8 @@ class mysqli {
         }
         $this->querynum++;
         $this->query_finished = true;
-        $this->resultObj = $query;
-        return $query;
+        $this->resultObj = $query ?? null;
+        return $query ?? null;
     }
 
     //返回当前SQL语句
@@ -90,7 +90,7 @@ class mysqli {
     /*
      * 面向对象 链式操作
      */
-    public function table($table, $alias= null): mysqli
+    public function table($table, $alias= null)
     {
         if(empty($table)){
             return false;
