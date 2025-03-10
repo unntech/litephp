@@ -201,4 +201,16 @@ class LiComm {
         $tbtime = mktime( 0, 0, 0, $today[ 'mon' ], $today[ 'mday' ], $today[ 'year' ] );
         return $DT_TIME - $tbtime;
     }
+
+    public static function secondsToString($seconds): string
+    {
+        if($seconds < 60){
+            $str = $seconds . '秒';
+        }elseif($seconds < 3600){
+            $str = floor($seconds / 60) . '分'. $seconds % 60 . '秒';
+        }else{
+            $str = floor($seconds / 3600) . '时' . round(($seconds % 3600) / 60) . '分';
+        }
+        return $str;
+    }
 }
