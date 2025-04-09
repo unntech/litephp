@@ -23,20 +23,24 @@ class mysqli {
 
     public function connect($dbhost, $dbport, $dbuser, $dbpass, $dbname='', $dbcharset='') {
         $this->connid = mysqli_init();
-        if(mysqli_real_connect($this->connid, $dbhost, $dbuser, $dbpass, false, $dbport)) {
+        try{
+            if(mysqli_real_connect($this->connid, $dbhost, $dbuser, $dbpass, false, $dbport)) {
             //
-        } else {
-            $this->linked = 0;
-            $retry = 2;
-            while($retry-- > 0) {
-                if(mysqli_real_connect($this->connid, $dbhost, $dbuser, $dbpass, false, $dbport)) {
-                    $this->linked = 1;
-                    break;
+            } else {
+                $this->linked = 0;
+                $retry = 2;
+                while($retry-- > 0) {
+                    if(mysqli_real_connect($this->connid, $dbhost, $dbuser, $dbpass, false, $dbport)) {
+                        $this->linked = 1;
+                        break;
+                    }
+                }
+                if($this->linked == 0) {
+                    $this->halt('Can not connect to MySQL server');
                 }
             }
-            if($this->linked == 0) {
-                $this->halt('Can not connect to MySQL server');
-            }
+        }catch (\Throwable $e){
+            $this->exception($e, 'mysqli_real_connect');
         }
         $version = $this->version();
         if($version > '4.1' && !empty($dbcharset)) mysqli_query($this->connid, "SET character_set_connection=".$dbcharset.", character_set_results=".$dbcharset.", character_set_client=binary");
@@ -763,7 +767,7 @@ class mysqli {
             $html = '<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"><title>HTTP 500</title><style>body{margin: 0 auto;} .header{background: #6c757d; color: #eee; padding: 50px 15px 30px 15px;line-height: 1.5rem} .sql{background: #cce5ff; color: #004085; padding: 15px 15px;line-height: 1.5rem} .msg{padding: 15px 15px;line-height: 1.25rem}</style></head><body>';
             $html .= '<div class="header"><h3>' . $e->getMessage() . '</h3>Code: ' . $e->getCode() . '<BR>File: ' . $e->getFile() . '<BR>Line: ' . $e->getLine() . '</div>';
             $html .= '<div class="sql">Sql: ' .$sql. '</div>';
-            $html .= '<div class="msg">' . dv($e, false) . '</div>';
+            $html .= '<div class="msg"><pre>' . print_r($e, true) . '</pre></div>';
             $html .= '</body></html>';
             echo $html;
         } else {
