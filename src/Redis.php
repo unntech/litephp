@@ -29,6 +29,11 @@ class Redis {
         return $redis;
     }
     
+    public static function __callStatic($method, $args)
+    {
+        return call_user_func_array([self::$redis, $method], $args);
+    }
+    
     public static function set($key, $value, $ttl=0){
         
         return $ttl > 0 ? self::$redis->set(self::$pre.$key, $value, $ttl) : self::$redis->set(self::$pre.$key, $value);

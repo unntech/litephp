@@ -44,8 +44,8 @@ class LiRsa {
         $this->private_key_bits = $private_key_bits;
     }
     
-    public function setRsaKey($pubkey,$prikey,$one=false){
-        if($one){
+    public function setRsaKey($pubkey,$prikey,$inline=false){
+        if($inline){
             $this->pubKey = "-----BEGIN PUBLIC KEY-----\n" . wordwrap($pubkey, 64, "\n", true) . "\n-----END PUBLIC KEY-----";
             $this->priKey = "-----BEGIN RSA PRIVATE KEY-----\n" . wordwrap( $prikey, 64, "\n", true ) . "\n-----END RSA PRIVATE KEY-----";
         }else{

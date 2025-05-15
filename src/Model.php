@@ -351,7 +351,7 @@ abstract class Model
      * @param $id, 可以单个，也可以多个数组
      * @return bool|\mysqli_result|string
      */
-    public static function deleteByKey(int|array $id)
+    public static function deleteByKey($id)
     {
         $model = self::instance();
         if(is_array($id)){

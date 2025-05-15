@@ -3,6 +3,9 @@
 namespace LitePhp;
 
 class Db {
+    /**
+     * @var mysqli | sqlsrv | mongodb
+     */
     public static $db;
     
     /**
@@ -15,19 +18,24 @@ class Db {
         $dbt = $cfg['database'];
         switch($dbt){
             case 'mysqli':
-                $db = new \LitePhp\mysqli($cfg);
+                $db = new mysqli($cfg);
                 break;
             case 'sqlsrv':
-                $db = new \LitePhp\sqlsrv($cfg);
+                $db = new sqlsrv($cfg);
                 break;
             case 'mongodb':
-				$db = new \LitePhp\mongodb($cfg);
+				$db = new mongodb($cfg);
 				break;
             default :
                 $db = false;
         }
         if(!$new) self::$db = $db;
         return $db;
+    }
+    
+    public static function __callStatic($method, $args)
+    {
+        return call_user_func_array([self::$db, $method], $args);
     }
 
 }

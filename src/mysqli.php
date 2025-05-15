@@ -697,9 +697,20 @@ class mysqli {
         return $res->num_rows > 0 ;
     }
 
-    public function fetch_array($query, $result_type = MYSQLI_ASSOC)
+    public function fetch_array($query = null, $result_type = MYSQLI_ASSOC)
     {
+        if(empty($query)){
+            $query = $this->resultObj;
+        }
         return mysqli_fetch_array($query, $result_type);
+    }
+
+    public function fetch_assoc($query = null)
+    {
+        if(empty($query)){
+            $query = $this->resultObj;
+        }
+        return mysqli_fetch_assoc($query);
     }
 
     public function affected_rows()
@@ -707,13 +718,19 @@ class mysqli {
         return mysqli_affected_rows($this->connid);
     }
 
-    public function num_rows($query)
+    public function num_rows($query = null)
     {
+        if(empty($query)){
+            $query = $this->resultObj;
+        }
         return mysqli_num_rows($query);
     }
 
-    public function num_fields($query)
+    public function num_fields($query = null)
     {
+        if(empty($query)){
+            $query = $this->resultObj;
+        }
         return mysqli_num_fields($query);
     }
 
@@ -727,8 +744,11 @@ class mysqli {
         return mysqli_insert_id($this->connid);
     }
 
-    public function fetch_row($query)
+    public function fetch_row($query = null)
     {
+        if(empty($query)){
+            $query = $this->resultObj;
+        }
         return mysqli_fetch_row($query);
     }
 
@@ -755,7 +775,7 @@ class mysqli {
     protected function halt($message = '', $sql = '')
     {
         if(defined('DT_DEBUG') && DT_DEBUG){
-            echo "\t\t<query>".$sql."</query>\n\t\t<errno>".$this->errno()."</errno>\n\t\t<error>".$this->error()."</error>\n\t\t<errmsg>".$message."</errmsg>\n";
+            echo "\t\t<query>".$sql."</query>\n\t\t<errno>".$this->errno()."</errno>\n\t\t<errmsg>".$message."</errmsg>\n";
         }else{
             echo $message;
         }
@@ -1051,4 +1071,3 @@ class mysqli {
     }
 
 }
-?>
