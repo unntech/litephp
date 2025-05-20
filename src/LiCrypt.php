@@ -15,9 +15,7 @@ class LiCrypt
     {
         $this->cipher = $cipher;
         $this->ckey = $key;
-        $ivlen = openssl_cipher_iv_length($this->cipher);
-        //$this -> iv = openssl_random_pseudo_bytes($ivlen);
-        $this->iv = empty($iv) ? $this->ivstr($key, $ivlen) : $iv;
+        $this->iv = empty($iv) ? $this->ivstr($key) : $iv;
         $this->salt = substr(md5('UNN.TECH' . $key) . $this->iv, 3, 16);
         $this->err = 0;
     }
@@ -26,7 +24,7 @@ class LiCrypt
      * 获取有效密码方式算法列表
      * @return array
      */
-    public function getCipher()
+    public function getCipher(): array
     {
         return openssl_get_cipher_methods();
     }
@@ -50,7 +48,7 @@ class LiCrypt
     public function setKey(string $key = '', string $iv = '')
     {
         $this->ckey = $key;
-        $this->iv = empty($iv) ? $this->ivstr($key, $ivlen) : $iv;
+        $this->iv = empty($iv) ? $this->ivstr($key) : $iv;
     }
 
     /**
@@ -63,9 +61,10 @@ class LiCrypt
         $this->salt = $salt;
     }
 
-    private function ivstr($key, $ivlen)
+    private function ivstr($key)
     {
         $str = md5($key);
+        $ivlen = openssl_cipher_iv_length($this->cipher);
         $str = str_pad($str, $ivlen, '=');
         return substr($str, 0, $ivlen);
     }
@@ -105,7 +104,7 @@ class LiCrypt
      * @param string arr 需加密的字符串或数组
      * @return string 加密后字符串
      */
-    public function jencrypt($arr, $key = '', $iv = '')
+    public function jencrypt($arr, $key = '', $iv = ''): string
     {
         if (is_array($arr)) {
             $rt = $this->encrypt(json_encode($arr), $key, $iv);
@@ -165,7 +164,7 @@ class LiCrypt
      * 验证TOKEN
      * @param string $Token
      * @param bool $needSign 需验证签名，防止数据被篡改
-     * @return array Jwt数组 失败返回false, err为错误代码
+     * @return bool|array Jwt数组 失败返回false, err为错误代码
      */
     public function verifyToken(string $Token, bool $needSign = false)
     {
@@ -231,7 +230,7 @@ class LiCrypt
      * @param string $input 需要编码的字符串
      * @return string
      */
-    public function base64UrlEncode($input)
+    public function base64UrlEncode(string $input): string
     {
         return str_replace('=', '', strtr(base64_encode($input), '+/', '-_'));
     }
@@ -241,7 +240,7 @@ class LiCrypt
      * @param string $input 需要解码的字符串
      * @return bool|string
      */
-    public function base64UrlDecode($input)
+    public function base64UrlDecode(string $input)
     {
         $remainder = strlen($input) % 4;
         if ($remainder) {

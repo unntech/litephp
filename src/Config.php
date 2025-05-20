@@ -36,7 +36,7 @@ class Config
     /**
      * 加载配置文件
      * @access public
-     * @param  array $file 配置文件名
+     * @param  array|string $file 配置文件名
      * @return array
      */
     public function load($file)
@@ -79,11 +79,11 @@ class Config
     /**
      * 获取配置参数 为空则获取所有配置
      * @access public
-     * @param  string $name    配置参数名（支持多级配置 .号分割）
+     * @param  ?string $name    配置参数名（支持多级配置 .号分割）
      * @param  mixed  $default 默认值
      * @return mixed
      */
-    public function get(string $name = null, $default = null)
+    public function get(?string $name = null, $default = null)
     {
         // 无参数时获取所有
         if (empty($name)) {
@@ -113,10 +113,10 @@ class Config
      * 设置配置参数 name为数组则为批量设置
      * @access public
      * @param  array  $config 配置参数
-     * @param  string $name 配置名
+     * @param  ?string $name 配置名
      * @return array
      */
-    public function set(array $config, string $name = null)
+    public function set(array $config, ?string $name = null)
     {
         if (!empty($name)) {
             if (isset($this->config[$name])) {

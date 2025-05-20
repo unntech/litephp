@@ -167,12 +167,18 @@ class LiHttp {
      * @param string $url 跳转路径
      * @param bool $permanently 是否为长期资源重定向
      */
-    public static function redirect($url, $permanently = false){
+    public static function redirect(string $url, bool $permanently = false){
         self::sendStatus($permanently ? 301 : 302);
         header('Location:'.$url);
         exit(0);
     }
-    
+
+    /**
+     * 获取域名SSL证书信息
+     * @param string $domain
+     * @param int $port
+     * @return array|false
+     */
     public static function getCertificateInformation(string $domain, int $port=443)
     {
         if(empty($domain)){
@@ -194,10 +200,16 @@ class LiHttp {
         return $certInfo;
     }
 
+    /**
+     * 获取域名SSL证书有效期
+     * @param string $domain
+     * @param int $port
+     * @return false|mixed
+     */
     public static function getCertificateExpirationTime(string $domain, int $port=443)
     {
         $certInfo = self::getCertificateInformation($domain, $port);
-        if($certInfo == false){
+        if($certInfo === false){
             return false;
         }
 

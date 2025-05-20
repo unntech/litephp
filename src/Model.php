@@ -85,7 +85,7 @@ abstract class Model
      * @param Closure $maker
      * @return void
      */
-    public static function maker(Closure $maker)
+    public static function maker($maker)
     {
         static::$maker[] = $maker;
     }
@@ -97,7 +97,7 @@ abstract class Model
      * @param Closure $closure
      * @return void
      */
-    public static function macro(string $method, Closure $closure)
+    public static function macro(string $method, $closure)
     {
         if (!isset(static::$macro[static::class])) {
             static::$macro[static::class] = [];
@@ -108,7 +108,7 @@ abstract class Model
     /**
      * 设置Db对象
      * @access public
-     * @param Db $db Db对象
+     * @param Db::$db Db对象
      * @return void
      */
     public static function setDb($db)

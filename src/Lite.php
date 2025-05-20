@@ -22,7 +22,8 @@ class Lite {
      * 获取应用根目录
      * @return string
      */
-    public static function getRootPath(){
+    public static function getRootPath(): string
+    {
         if(empty(self::$rootPath)){
             self::$rootPath = dirname(__DIR__ , 4);
         }
@@ -35,7 +36,8 @@ class Lite {
      * @param string $path 目录
      * @return void
      */
-    public static function setRootPath( string $path){
+    public static function setRootPath(string $path)
+    {
         self::$rootPath = $path;
     }
     
@@ -43,7 +45,8 @@ class Lite {
      * 获取框架根目录
      * @return string
      */
-    public static function getLitePhpPath(){
+    public static function getLitePhpPath(): string
+    {
         if(empty(self::$LiPath)){
             self::$LiPath = __DIR__ ;
         }

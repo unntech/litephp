@@ -2,7 +2,7 @@
 
 namespace LitePhp;
 
-require_once __DIR__ . "/../lib/wxMsgCrypt/wxBizMsgCrypt.php";
+use LitePhp\Library\wxBizMsgCrypt;
 
 class Weixin
 {
@@ -17,7 +17,7 @@ class Weixin
     public $msgtype = 'text';   //('text','image','location')
     public $msg = array();
 
-    public function __construct($token, $encodingAesKey = '', $encrypt = false, $appId = '', $debug = false)
+    public function __construct(string $token, string $encodingAesKey = '', bool $encrypt = false, string $appId = '', bool $debug = false)
     {
         $this->token = $token;
         $this->encodingAesKey = $encodingAesKey;
@@ -32,11 +32,11 @@ class Weixin
 
     /**
      * 获得用户发过来的消息（消息内容和消息类型 ）
-     * @param $data 默认POST RAW数据
-     * @param $getarr 默认GET参数
+     * @param ?string $data 默认POST RAW数据
+     * @param ?array $getarr 默认GET参数
      * @return int 0成功 其它为错误代码
      */
-    public function getMsg($data = null, $getarr = null)
+    public function getMsg(?string $data = null, ?array $getarr = null): int
     {
         //$postStr = $GLOBALS["HTTP_RAW_POST_DATA"];
         if(empty($data)) {
@@ -78,10 +78,10 @@ class Weixin
 
     /**
      * 回复文本消息
-     * @param $text
+     * @param string $text
      * @return string
      */
-    public function makeText($text = '')
+    public function makeText(string $text = ''): string
     {
         $CreateTime = $this->timestamp;
         $FuncFlag = $this->setFlag ? 1 : 0;
@@ -100,10 +100,10 @@ class Weixin
 
     /**
      * 根据数组参数回复图文消息
-     * @param $newsData
+     * @param array $newsData
      * @return string
      */
-    public function makeNews($newsData = array())
+    public function makeNews(array $newsData = []): string
     {
         $CreateTime = $this->timestamp;
         $FuncFlag = $this->setFlag ? 1 : 0;
@@ -142,11 +142,11 @@ class Weixin
 
     /**
      * 根据数组参数回复对应类型消息
-     * @param $msgType : image | voice | video | music
-     * @param $data ['content'=>'', 'mediaId'=>'', 'title'=>'', 'description'=>'', 'musicUrl'=>'', 'HQmusicUrl'=>'', 'thumbMediaId'=>'']
+     * @param string $msgType : image | voice | video | music
+     * @param array $data ['content'=>'', 'mediaId'=>'', 'title'=>'', 'description'=>'', 'musicUrl'=>'', 'HQmusicUrl'=>'', 'thumbMediaId'=>'']
      * @return string
      */
-    public function makeMessage($msgType, $data = [])
+    public function makeMessage(string $msgType, array $data = []): string
     {
         $CreateTime = $this->timestamp;
         $FromUserName = $this->msg[ 'FromUserName' ] ?? ''; //获取发送方帐号（OpenID）
@@ -257,7 +257,7 @@ class Weixin
      * 验证数据签名
      * @return bool
      */
-    private function checkSignature()
+    private function checkSignature(): bool
     {
         $signature = $_GET["signature"] ?? '';
         $timestamp = $_GET["timestamp"] ?? '';

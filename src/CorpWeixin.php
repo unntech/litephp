@@ -2,7 +2,7 @@
 
 namespace LitePhp;
 
-require_once __DIR__ . "/../lib/wxMsgCrypt/wxBizMsgCrypt.php";
+use LitePhp\Library\wxBizMsgCrypt;
 
 class CorpWeixin
 {
@@ -90,10 +90,10 @@ class CorpWeixin
 
     /**
      * 回复文本消息
-     * @param $text
+     * @param string $text
      * @return string
      */
-    public function makeText($text = '')
+    public function makeText(string $text = ''): string
     {
         $CreateTime = $this->timestamp;
         $FromUserName = $this->FromUserName ?? ''; //获取发送方帐号（OpenID）

@@ -2,9 +2,10 @@
 LitePhp 1.0
 ===============
 
-[![Total Downloads](https://poser.pugx.org/unntech/litephp/downloads)](https://packagist.org/packages/unntech/litephp)
 [![Latest Stable Version](https://poser.pugx.org/unntech/liteapi/v/stable)](https://packagist.org/packages/unntech/litephp)
-[![PHP Version](https://img.shields.io/badge/php-%3E%3D7.0-8892BF.svg)](http://www.php.net/)
+[![Total Downloads](https://poser.pugx.org/unntech/litephp/downloads)](https://packagist.org/packages/unntech/litephp)
+[![Latest Unstable Version](http://poser.pugx.org/unntech/litephp/v/unstable)](https://packagist.org/packages/unntech/litephp)
+[![PHP Version Require](http://poser.pugx.org/unntech/litephp/require/php)](https://packagist.org/packages/unntech/litephp)
 [![License](https://poser.pugx.org/unntech/litephp/license)](https://packagist.org/packages/unntech/litephp)
 
 LitePhp的公共库，需先创建LiteApp 或LiteApi项目使用
