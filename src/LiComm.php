@@ -310,4 +310,57 @@ class LiComm {
             echo "\n";
         }
     }
+
+    /**
+     * 软件版本号字符串拆解成可读数组
+     * @param string $version
+     * @return array
+     */
+    public static function versionExplode(string $version): array
+    {
+        $i = strpos($version, '-');
+        if ($i !== false) {
+            $_version = substr($version, 0, $i);
+            $release = substr($version, $i + 1);
+        }else{
+            $release = null;
+            $_version = $version;
+        }
+        $e = explode('.', $_version);
+        return [
+            'version' => $_version,
+            'major'   => (int)($e[0] ?? 0),
+            'minor'   => (int)($e[1] ?? 0),
+            'patch'   => (int)($e[2] ?? 0),
+            'release' => $release,
+        ];
+    }
+
+    /**
+     * 比较两个版本号新旧
+     * @param string $version1
+     * @param string $version2
+     * @return int 0:相同; 1:前者新; 2:后者新
+     */
+    public static function versionCompare(string $version1, string $version2): int
+    {
+        $v1 = self::versionExplode($version1);
+        $v2 = self::versionExplode($version2);
+        $c = $v1['major'] <=> $v2['major'];
+        if($c != 0){
+            return $c;
+        }
+        $c = $v1['minor'] <=> $v2['minor'];
+        if($c != 0){
+            return $c;
+        }
+        $c = $v1['patch'] <=> $v2['patch'];
+        if($c != 0){
+            return $c;
+        }
+        if(!empty($v1['release']) || !empty($v2['release'])){
+            return strcmp($v1['release'], $v2['release']) <=> 0;
+        }
+        return 0;
+    }
 }
