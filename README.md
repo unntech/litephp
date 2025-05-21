@@ -39,14 +39,15 @@ composer update unntech/litephp
 ~~~
 litephp/
 ├── lib                                     #类库
-|   ├── wxMsgCrypt                          #微信消息加密库
 |   ├── phpqrcode.php                       #二维码类库
 ├── src                                     #
 |   ├── gif                                 #gif图像类库
+|   ├── Library                             #共用类库文件
 |   ├── Image.php                           #图像处理类库
 |   ├── Config.php                          #Config类
 |   ├── CorpWeixin.php                      #企业微信消息推送加解密类库
 |   ├── Db.php                              #数据库实例类
+|   ├── Exception.php                       #异常类继承方法
 |   ├── GoogleAuthenticator.php             #Google二次验证类
 │   ├── LiComm.php                          #常用函数方法
 │   ├── LiCrypt.php                         #jwt类库，自定义token加解密

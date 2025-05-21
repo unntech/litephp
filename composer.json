@@ -11,8 +11,7 @@
         }
     ],
     "require": {
-        "php": ">=7.2",
-        "ext-mysqli": "*"
+        "php": ">=7.2"
     },
     "autoload": {
         "psr-4": {
