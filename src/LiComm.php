@@ -340,7 +340,7 @@ class LiComm {
      * 比较两个版本号新旧
      * @param string $version1
      * @param string $version2
-     * @return int 0:相同; 1:前者新; 2:后者新
+     * @return int 0:相同; 1:前者新; -1:后者新
      */
     public static function versionCompare(string $version1, string $version2): int
     {

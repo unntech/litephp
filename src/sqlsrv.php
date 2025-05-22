@@ -686,11 +686,11 @@ class sqlsrv {
         return $r;
     }
 
-    public function fetch_array( $res = null, $type = SQLSRV_FETCH_ASSOC, $row = null, $offset = null) {
+    public function fetch_array( $res = null, $type = SQLSRV_FETCH_BOTH) {
         if(empty($res)){
             $res = $this->resultObj;
         }
-        $r = sqlsrv_fetch_array( $res, $type, $row, $offset);
+        $r = sqlsrv_fetch_array( $res, $type);
         return $r;
     }
 
