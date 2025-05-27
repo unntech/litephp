@@ -2,8 +2,168 @@
 
 namespace LitePhp;
 
+use LitePhp\Models\LiHttpResponse;
+
 class LiHttp {
-    
+
+    protected static $instance;
+    protected $base_uri = '', $timeout = -1, $headers = [];
+
+    public function __construct($options = [])
+    {
+        if(isset($options['base_uri'])){
+            $this->base_uri = $options['base_uri'];
+        }
+        if(isset($options['timeout'])){
+            $this->timeout = $options['timeout'];
+        }
+        if(isset($options['headers'])){
+            $this->headers = $options['headers'];
+        }
+        self::$instance = $this;
+    }
+
+    public static function instance($options = [])
+    {
+        if (is_null(self::$instance)) {
+            self::$instance = new static($options);
+        }
+
+        return self::$instance;
+    }
+
+    public function request($method = 'GET', $uri = '', $data = null, $aHeader = null ): LiHttpResponse
+    {
+        if(filter_var($uri, FILTER_VALIDATE_URL) !== false){
+            $url = $uri;
+        }else{
+            $url = $this->base_uri . $uri;
+        }
+        $ch = curl_init();
+        curl_setopt( $ch, CURLOPT_URL, $url );
+        curl_setopt( $ch, CURLOPT_HEADER, true );
+        $pHeader = [];
+        if(!empty($this->headers)){
+            foreach($aHeader as $k=>$v){
+                $pHeader[] = "{$k}: {$v}";
+            }
+        }
+        if($aHeader != null){
+            foreach($aHeader as $k=>$v){
+                $pHeader[] = "{$k}: {$v}";
+            }
+        }
+        if(!empty($pHeader)){
+            curl_setopt( $ch, CURLOPT_HTTPHEADER, $pHeader);
+        }
+        if($this->timeout >= 0){
+            curl_setopt( $ch, CURLOPT_TIMEOUT, $this->timeout );
+        }
+        curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+        if(strtolower(parse_url($url, PHP_URL_SCHEME)) == 'https'){
+            curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, true );
+            curl_setopt( $ch, CURLOPT_SSL_VERIFYHOST, 2 );
+        }else{
+            curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, false );
+            curl_setopt( $ch, CURLOPT_SSL_VERIFYHOST, 0 );
+        }
+        switch ($method){
+            case 'POST':
+                curl_setopt( $ch, CURLOPT_POST, true );
+                curl_setopt( $ch, CURLOPT_POSTFIELDS, $data );
+                break;
+            case 'PUT':
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+                break;
+            case 'DELETE':
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
+                break;
+            case 'PATCH':
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PATCH");
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+                break;
+            case 'HEAD':
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "HEAD");
+                break;
+            case 'OPTIONS':
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "OPTIONS");
+                break;
+            case 'TRACE':
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "TRACE");
+                break;
+            default:
+
+        }
+        //curl_setopt( $ch, CURLOPT_USERAGENT, 'Mozilla/5.0' );
+        $response = curl_exec( $ch );
+        if($response === false){
+            $errorCode = curl_errno($ch);
+            $errorMessage = curl_error($ch);
+            $ret = new LiHttpResponse([
+                'method'       => $method,
+                'errorCode'    => $errorCode,
+                'errorMessage' => $errorMessage,
+            ]);
+        }else{
+            $responseInfo = curl_getinfo( $ch );
+            $responseStatusCode = curl_getinfo( $ch, CURLINFO_HTTP_CODE);
+            if($method == 'HEAD'){
+                $headers = $response;
+                $responseBody = null;
+            }else{
+                // 分离header和body
+                $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+                $headers = substr($response, 0, $header_size);
+                $responseBody = substr($response, $header_size);
+            }
+
+
+            // 处理headers
+            $header_lines = explode("\r\n", $headers);
+            $header_array = [];
+            foreach($header_lines as $line) {
+                if (strpos($line, ':') !== false) {
+                    list($key, $value) = explode(':', $line, 2);
+                    $header_array[trim($key)] = trim($value);
+                }
+            }
+            $responseHeaders = $header_array;
+            $ret = new LiHttpResponse([
+                'method'     => $method,
+                'info'       => $responseInfo,
+                'statusCode' => $responseStatusCode,
+                'body'       => $responseBody,
+                'headers'    => $responseHeaders,
+            ]);
+        }
+        
+        curl_close( $ch );
+        return $ret;
+    }
+
+    /**
+     * 设置 base_uri
+     * @param string $uri
+     * @return $this
+     */
+    public function setBaseUri(string $uri = '')
+    {
+        $this->base_uri = $uri;
+        return $this;
+    }
+
+    /**
+     * 设置请求头
+     * @param array $headers
+     * @return $this
+     */
+    public function setHeaders(array $headers = [])
+    {
+        $this->headers = $headers;
+        return $this;
+    }
+
     public static function get($url, $aHeader = null){
         $ch = curl_init();
         curl_setopt( $ch, CURLOPT_URL, $url );
@@ -53,8 +213,13 @@ class LiHttp {
         curl_close( $ch );
         return $strRes;
     }
-    
-    public static function requestHeaders(){
+
+    /**
+     * 获取请求来源头信息
+     * @return array
+     */
+    public static function requestHeaders(): array
+    {
         if (function_exists('apache_request_headers') && $result = apache_request_headers()) {
             $header = $result;
         } else {
@@ -74,9 +239,7 @@ class LiHttp {
             }
         }
 
-        $ret = array_change_key_case($header);
-
-        return $ret;
+        return array_change_key_case($header);
     }
     
     /**
@@ -84,7 +247,8 @@ class LiHttp {
      * @param int $status http 状态码
      * @return bool
      */
-    public static function sendStatus($status){
+    public static function sendStatus(int $status): bool
+    {
         $message = self::getStatusMessage($status);
         if(!headers_sent() && !empty($message)){
             if(substr(php_sapi_name(), 0, 3) == 'cgi'){//CGI 模式
@@ -102,7 +266,8 @@ class LiHttp {
      * @param string $charset
      * @return bool 是否成功
      */
-    public static function sendCharset($charset){
+    public static function sendCharset(string $charset): bool
+    {
         if(!headers_sent()){
             header('Content-Type:text/html; charset='.$charset);
             return true;
@@ -115,7 +280,8 @@ class LiHttp {
      * @param int $status
      * @return string|null
      */
-    public static function getStatusMessage($status){
+    public static function getStatusMessage(int $status): ?string
+    {
         static $msg = [
             100 => 'Continue',
             101 => 'Switching Protocols',
@@ -159,7 +325,7 @@ class LiHttp {
             505 => 'HTTP Version Not Supported',
             509 => 'Bandwidth Limit Exceeded',
         ];
-        return isset($msg[$status]) ? $msg[$status] : null;
+        return $msg[$status] ?? null;
     }
 
     /**
@@ -167,7 +333,8 @@ class LiHttp {
      * @param string $url 跳转路径
      * @param bool $permanently 是否为长期资源重定向
      */
-    public static function redirect(string $url, bool $permanently = false){
+    public static function redirect(string $url, bool $permanently = false)
+    {
         self::sendStatus($permanently ? 301 : 302);
         header('Location:'.$url);
         exit(0);

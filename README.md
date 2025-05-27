@@ -1,5 +1,5 @@
 
-LitePhp 1.0
+LitePhp 1.1
 ===============
 
 [![Latest Stable Version](https://poser.pugx.org/unntech/liteapi/v/stable)](https://packagist.org/packages/unntech/litephp)
@@ -19,9 +19,10 @@ LitePhp的公共库，需先创建LiteApp 或LiteApi项目使用
 * 原生多应用支持
 * 对IDE更加友好
 * 统一和精简大量用法
+* 1.1 增加返回结果类，让数据处理更规范。同时移除Db操作面向过程写法的一些兼容参数，完善面向对象方格
 
 
-> LitePhp 1.0的运行环境要求PHP7.2+，兼容PHP8
+> LitePhp 1.1的运行环境要求PHP7.2+，兼容PHP8
 
 ## 安装
 
@@ -43,12 +44,13 @@ litephp/
 ├── src                                     #
 |   ├── gif                                 #gif图像类库
 |   ├── Library                             #共用类库文件
-|   ├── Image.php                           #图像处理类库
+|   ├── Models                              #数据集模型类
 |   ├── Config.php                          #Config类
 |   ├── CorpWeixin.php                      #企业微信消息推送加解密类库
 |   ├── Db.php                              #数据库实例类
 |   ├── Exception.php                       #异常类继承方法
 |   ├── GoogleAuthenticator.php             #Google二次验证类
+|   ├── Image.php                           #图像处理类库
 │   ├── LiComm.php                          #常用函数方法
 │   ├── LiCrypt.php                         #jwt类库，自定义token加解密
 │   ├── LiHttp.php                          #Http基础类，curl

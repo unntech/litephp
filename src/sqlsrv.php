@@ -1,6 +1,8 @@
 <?php
 namespace LitePhp;
 
+use LitePhp\Models\SqlSrvResult;
+
 class sqlsrv {
     public $querynum = 0;
     public $connid = 0;
@@ -9,6 +11,8 @@ class sqlsrv {
     public $sql = '';
     protected $options = ['table'=>'', 'alias'=> null, 'fields'=>null, 'condition'=>null, 'param'=>[], 'fetchSql'=>false];
     protected $query_finished = false;
+    public $errorCode = 0;
+    protected $errorMessage = '';
 
     /**
      * 构造方法
@@ -47,6 +51,7 @@ class sqlsrv {
         $sql = trim( $sql );
         $this->sql = $sql;
         try{
+            $this->insertid = 0;
             if ( preg_match( "/^insert into/i", $sql ) ) {
                 $sql = "{$sql}; SELECT @@identity as insertid;";
                 //echo $sql;
@@ -55,8 +60,6 @@ class sqlsrv {
                     sqlsrv_next_result( $query );
                     $insid = $this->fetch_row( $query );
                     $this->insertid = intval( $insid[ 0 ] );
-                }else{
-                    $this->insertid = 0;
                 }
             } else {
                 $query = sqlsrv_query( $this->connid, $sql );
@@ -65,9 +68,24 @@ class sqlsrv {
             $this->exception($e, $sql);
         }
 
+        $_err = $this->errors();
+        $this->errorCode = $_err[0][1] ?? 0;
+        $this->errorMessage = $_err[0][0] ?? '';
         $this->query_finished = true;
-        $this->resultObj = $query ?? null;
+        $this->resultObj = $query;
         return $query;
+    }
+
+    public function result(): SqlSrvResult
+    {
+        return SqlSrvResult::instance([
+            'result'        => $this->resultObj,
+            'sql'           => $this->sql,
+            'insertId'      => $this->insertid,
+            'affected_rows' => $this->affected_rows(),
+            'errorCode'     => $this->errorCode,
+            'errorMessage'  => $this->errorMessage,
+        ]);
     }
 
     //返回当前SQL语句
@@ -192,30 +210,6 @@ class sqlsrv {
         return $subQuery;
     }
 
-    //查询结果转数组
-    public function toArray(string $indexfield='', ?string $value = null)
-    {
-        $ret = array();
-        if(empty($this->resultObj)){
-            $err = $this->errors();
-            $this->halt($err[0]['message'], $this->sql);
-            return $ret;
-        }
-        while($r = $this->fetch_assoc()){
-            if(empty($value)){
-                $_r = $r;
-            }else{
-                $_r = $r[$value];
-            }
-            if($indexfield=='' || !isset($r[$indexfield])){
-                $ret[] = $_r;
-            }else{
-                $ret[$r[$indexfield]] = $_r;
-            }
-        }
-        return $ret;
-    }
-
     /*
      * 更新数据库表
      * $table 数据库表名
@@ -226,16 +220,15 @@ class sqlsrv {
      * ['id'=>['>',1], 'fed'=>['LIKE','S%']] //id > 1 and fed LIKE 'S%'
      */
 
-    public function update($table = null, $fields = [], $condition = null)
+    public function update()
     {
-        if(empty($table)){
-            $table = $this->options['table'];
-            if(empty($table) || $this->query_finished !== false){ //未设置表名
-                return false;
-            }
-            $fields = $this->options['fields'];
-            $condition = $this->options['condition'];
+        $table = $this->options['table'];
+        if(empty($table) || $this->query_finished !== false){ //未设置表名
+            return false;
         }
+        $fields = $this->options['fields'];
+        $condition = $this->options['condition'];
+
         $table = str_replace('.', '].[', $table);
         if(!is_array($fields) || empty($fields)){
             return false;
@@ -262,7 +255,14 @@ class sqlsrv {
         }
         $this->sql = $sql;
         if($this->options['fetchSql']){ return $sql; }
-        return $this->query($sql) ;
+        $res =  $this->query($sql);
+        return SqlSrvResult::instance([
+            'result'        => $res,
+            'sql'           => $this->sql,
+            'affected_rows' => $this->affected_rows(),
+            'errorCode'     => $this->errorCode,
+            'errorMessage'  => $this->errorMessage,
+        ]);
     }
 
     /*
@@ -274,15 +274,14 @@ class sqlsrv {
      * ['id'=>['>',1], 'fed'=>['LIKE','S%']] //id > 1 and fed LIKE 'S%'
      */
 
-    public function delete($table = null, $condition = null)
+    public function delete()
     {
-        if(empty($table)){
-            $table = $this->options['table'];
-            if(empty($table) || $this->query_finished !== false){ //未设置表名
-                return false;
-            }
-            $condition = $this->options['condition'];
+        $table = $this->options['table'];
+        if(empty($table) || $this->query_finished !== false){ //未设置表名
+            return false;
         }
+        $condition = $this->options['condition'];
+
         $table = str_replace('.', '].[', $table);
         $this->sql = '';
         $sql = "DELETE FROM [{$table}] ";
@@ -302,23 +301,28 @@ class sqlsrv {
         }
         $this->sql = $sql;
         if($this->options['fetchSql']){ return $sql; }
-        return $this->query($sql) ;
+        $res = $this->query($sql);
+        return SqlSrvResult::instance([
+            'result'        => $res,
+            'sql'           => $this->sql,
+            'affected_rows' => $this->affected_rows(),
+            'errorCode'     => $this->errorCode,
+            'errorMessage'  => $this->errorMessage,
+        ]);
     }
 
-    /*
+    /**
      * 插入数据
-     * $table 数据库表名
-     * $data 数据集
+     * @param array $data
+     * @return false|int|string
      */
-    public function insert($table, $data = null)
+    public function insert(array $data = [])
     {
-        if(is_array($table) && $data == null){  //兼容对象写法
-            $data = $table;
-            $table = $this->options['table'];
-            if(empty($table) || $this->query_finished !== false){ //未设置表名
-                return false;
-            }
+        $table = $this->options['table'];
+        if(empty($table) || $this->query_finished !== false){ //未设置表名
+            return false;
         }
+
         $table = str_replace('.', '`.`', $table);
         $this->sql = '';
         if(empty($data)){
@@ -333,7 +337,7 @@ class sqlsrv {
         if($res){
             return $this->insert_id();
         }else{
-            return $res;
+            return 0;
         }
     }
 
@@ -342,19 +346,20 @@ class sqlsrv {
      * $table 数据库表名
      * $data 数据集 二级数组
      */
-    public function insertAll($table, $data = null)
+    public function insertAll(array $data = [])
     {
-        if(is_array($table) && $data == null){ //兼容对象写法
-            $data = $table;
-            $table = $this->options['table'];
-            if(empty($table) || $this->query_finished !== false){ //未设置表名
-                return false;
-            }
+        $table = $this->options['table'];
+        if(empty($table) || $this->query_finished !== false){ //未设置表名
+            return false;
         }
+
         $table = str_replace('.', '`.`', $table);
         $this->sql = '';
         $d = [];
         foreach($data as $da){
+            if(!is_array($da)){
+                continue;
+            }
             $d[] = $this->_fields_split($da);
         }
         if(empty($d)){
@@ -371,8 +376,15 @@ class sqlsrv {
         $this->sql = $sql;
         if($this->options['fetchSql']){ return $sql; }
 
-        $res = $this->query($sql) ;
-        return $res;
+        $res = $this->query($sql);
+        return SqlSrvResult::instance([
+            'result'        => $res,
+            'sql'           => $this->sql,
+            'insertId'      => $this->insertid,
+            'affected_rows' => $this->affected_rows(),
+            'errorCode'     => $this->errorCode,
+            'errorMessage'  => $this->errorMessage,
+        ]);
     }
 
     /*
@@ -390,26 +402,17 @@ class sqlsrv {
                 'LIMIT'=>[0,10]
                  ]
      */
-    public function select($table = null, $fields = null, $condition = null, $param =[])
+    public function select()
     {
-        if($table === true){
-            $table = null;
-            $returnResult = true;
-        }else{
-            $returnResult = false;
+        $table = $this->options['table'];
+        if(empty($table) || $this->query_finished !== false){ //未设置表名
+            return false;
         }
-        if(empty($table)){
-            $table = $this->options['table'];
-            if(empty($table) || $this->query_finished !== false){ //未设置表名
-                return false;
-            }
-            $fields = $this->options['fields'];
-            $condition = $this->options['condition'];
-            $param = $this->options['param'];
-            $alias = $this->options['alias'];
-        }else{
-            $alias = null;
-        }
+        $fields = $this->options['fields'];
+        $condition = $this->options['condition'];
+        $param = $this->options['param'];
+        $alias = $this->options['alias'];
+
         $table = str_replace('.', '].[', $table);
         $this->sql = '';
         if(!empty($param['LIMIT']) && !is_array($param['LIMIT'])){
@@ -471,33 +474,29 @@ class sqlsrv {
         $this->sql = $sql;
         if($this->options['fetchSql']){ return $sql; }
 
-        $query = $this->query($sql) ;
-//        if($returnResult){
-//            return $query;
-//        }else{
-//            return $this;
-//        }
-        return $this;
-
+        $res = $this->query($sql);
+        return SqlSrvResult::instance([
+            'result'        => $res,
+            'sql'           => $this->sql,
+            'errorCode'     => $this->errorCode,
+            'errorMessage'  => $this->errorMessage,
+        ]);
     }
 
     /*
      * 查询一条数据
      */
-    public function selectOne($table=null, $fields = null, $condition = null)
+    public function selectOne()
     {
-        if(empty($table)){
-            $table = $this->options['table'];
-            if(empty($table) || $this->query_finished !== false){ //未设置表名
-                return false;
-            }
-            $fields = $this->options['fields'];
-            $condition = $this->options['condition'];
-            $param = $this->options['param'];
-            $alias = $this->options['alias'];
-        }else{
-            $alias = null;
+        $table = $this->options['table'];
+        if(empty($table) || $this->query_finished !== false){ //未设置表名
+            return false;
         }
+        $fields = $this->options['fields'];
+        $condition = $this->options['condition'];
+        $param = $this->options['param'];
+        $alias = $this->options['alias'];
+
         $table = str_replace('.', '].[', $table);
         $this->sql = '';
         if(empty($fields)){
@@ -549,36 +548,31 @@ class sqlsrv {
         $this->sql = $sql;
         if($this->options['fetchSql']){ return $sql; }
 
-        $query = $this->query($sql) ;
-        $row = $this->fetch_assoc($query);
-        $this->free_result($query);
-        return $row;
+        $res = $this->query($sql) ;
+        return $this->fetch_assoc();
     }
 
-    public function getOne($table=null, $fields = null, $condition = null)
+    public function getOne()
     {
-        return $this->selectOne($table, $fields, $condition);
+        return $this->selectOne();
     }
 
     public function get_one( $sql ) {
-        $query = $this->query( $sql );
-        $rs = $this->fetch_assoc( $query );
-        $this->free_result( $query );
-        return $rs;
+        $res = $this->query( $sql );
+        return $this->fetch_assoc();
     }
 
-    public function getValue($table = null, $fields = null, $condition = null)
+    public function getValue()
     {
-        if(empty($table)){
-            $table = $this->options['table'];
-            if(empty($table) || $this->query_finished !== false){ //未设置表名
-                return false;
-            }
-            $fields = $this->options['fields'];
-            $condition = $this->options['condition'];
-            $param = $this->options['param'];
-            $alias = $this->options['alias'];
+        $table = $this->options['table'];
+        if(empty($table) || $this->query_finished !== false){ //未设置表名
+            return false;
         }
+        $fields = $this->options['fields'];
+        $condition = $this->options['condition'];
+        $param = $this->options['param'];
+        $alias = $this->options['alias'];
+
         $table = str_replace('.', '].[', $table);
         $this->sql = '';
         $ct = gettype($fields);
@@ -624,30 +618,27 @@ class sqlsrv {
         $this->sql = $sql;
         if($this->options['fetchSql']){ return $sql; }
 
-        $query = $this->query($sql);
-        $r = $this->fetch_row($query);
-        $this->free_result($query);
+        $res = $this->query($sql);
+        $r = $this->fetch_row();
         return $r ? $r[0] : null;
     }
 
     public function get_value( $sql ) {
-        $query = $this->query( $sql );
-        $rs = $this->fetch_row( $query);
-        $this->free_result( $query );
+        $res = $this->query( $sql );
+        $rs = $this->fetch_row();
         return $rs[ 0 ];
     }
 
-    public function count($table = null, $condition = '')
+    public function count()
     {
-        if(empty($table)){
-            $table = $this->options['table'];
-            if(empty($table) || $this->query_finished !== false){ //未设置表名
-                return false;
-            }
-            $condition = $this->options['condition'];
-            $param = $this->options['param'];
-            $alias = $this->options['alias'];
+        $table = $this->options['table'];
+        if(empty($table) || $this->query_finished !== false){ //未设置表名
+            return false;
         }
+        $condition = $this->options['condition'];
+        $param = $this->options['param'];
+        $alias = $this->options['alias'];
+
         $table = str_replace('.', '].[', $table);
         $this->sql = '';
         $sql = "SELECT COUNT(*) AS amount FROM [{$table}]";
@@ -682,24 +673,21 @@ class sqlsrv {
         if(empty($res)){
             $res = $this->resultObj;
         }
-        $r = sqlsrv_fetch_array( $res, SQLSRV_FETCH_ASSOC );
-        return $r;
+        return sqlsrv_fetch_array( $res, SQLSRV_FETCH_ASSOC );
     }
 
     public function fetch_array( $res = null, $type = SQLSRV_FETCH_BOTH) {
         if(empty($res)){
             $res = $this->resultObj;
         }
-        $r = sqlsrv_fetch_array( $res, $type);
-        return $r;
+        return sqlsrv_fetch_array( $res, $type);
     }
 
     public function fetch_row( $res = null) {
         if(empty($res)){
             $res = $this->resultObj;
         }
-        $r = sqlsrv_fetch_array( $res, SQLSRV_FETCH_NUMERIC );
-        return $r;
+        return sqlsrv_fetch_array( $res, SQLSRV_FETCH_NUMERIC );
     }
 
     public function close() {
@@ -718,7 +706,9 @@ class sqlsrv {
         if(empty($res)){
             $res = $this->resultObj;
         }
-        return sqlsrv_rows_affected( $res );
+        $n = sqlsrv_rows_affected( $res );
+        if($n === false) $n = -1;
+        return $n;
     }
 
     public function server_info() {
