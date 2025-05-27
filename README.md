@@ -2,7 +2,7 @@
 LitePhp 1.1
 ===============
 
-[![Latest Stable Version](https://poser.pugx.org/unntech/liteapi/v/stable)](https://packagist.org/packages/unntech/litephp)
+[![Latest Stable Version](https://poser.pugx.org/unntech/litephp/v/stable)](https://packagist.org/packages/unntech/litephp)
 [![Total Downloads](https://poser.pugx.org/unntech/litephp/downloads)](https://packagist.org/packages/unntech/litephp)
 [![Latest Unstable Version](http://poser.pugx.org/unntech/litephp/v/unstable)](https://packagist.org/packages/unntech/litephp)
 [![PHP Version Require](http://poser.pugx.org/unntech/litephp/require/php)](https://packagist.org/packages/unntech/litephp)
@@ -40,17 +40,19 @@ composer update unntech/litephp
 ~~~
 litephp/
 ├── lib                                     #类库
-|   ├── phpqrcode.php                       #二维码类库
+│   ├── phpqrcode.php                       #二维码类库
 ├── src                                     #
-|   ├── gif                                 #gif图像类库
-|   ├── Library                             #共用类库文件
-|   ├── Models                              #数据集模型类
-|   ├── Config.php                          #Config类
-|   ├── CorpWeixin.php                      #企业微信消息推送加解密类库
-|   ├── Db.php                              #数据库实例类
-|   ├── Exception.php                       #异常类继承方法
-|   ├── GoogleAuthenticator.php             #Google二次验证类
-|   ├── Image.php                           #图像处理类库
+│   ├── Encrypt                             #加密算法类
+│   ├── gif                                 #gif图像类库
+│   ├── Library                             #共用类库文件
+│   ├── Models                              #数据集模型类
+│   │   ├── Api                             # Api 请求、输出基础类
+│   ├── Config.php                          #Config类
+│   ├── CorpWeixin.php                      #企业微信消息推送加解密类库
+│   ├── Db.php                              #数据库实例类
+│   ├── Exception.php                       #异常类继承方法
+│   ├── GoogleAuthenticator.php             #Google二次验证类
+│   ├── Image.php                           #图像处理类库
 │   ├── LiComm.php                          #常用函数方法
 │   ├── LiCrypt.php                         #jwt类库，自定义token加解密
 │   ├── LiHttp.php                          #Http基础类，curl

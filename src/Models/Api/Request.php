@@ -200,6 +200,9 @@ class Request
         $data['encrypted'] = $data['encrypted'] ?? false;
         $data['signType'] = $data['signType'] ?? 'NONE';
         $dataSign = $data['sign'] ?? 'NONE';
+        if($perforce && empty(self::$secret)){
+            self::$secret = mt_rand().uniqid();
+        }
         $verify = false;
         if($data['signType'] != 'NONE'){
             $head = $data['head'];
