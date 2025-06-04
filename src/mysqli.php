@@ -210,13 +210,13 @@ class mysqli {
      * ['id'=>['>',1], 'fed'=>['LIKE','S%']] //id > 1 and fed LIKE 'S%'
      */
 
-    public function update()
+    public function update(?array $data = null)
     {
         $table = $this->options['table'];
         if(empty($table) || $this->query_finished !== false){ //未设置表名
             return false;
         }
-        $fields = $this->options['fields'];
+        $fields = is_array($data) ? $data : $this->options['fields'];
         $condition = $this->options['condition'];
 
         $table = str_replace('.', '`.`', $table);
