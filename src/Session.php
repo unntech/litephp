@@ -22,7 +22,8 @@ class Session
         self::$save = $option['save'] ?? 'file';
         if(empty($_COOKIE['LSESSID'])){
             self::$session_id = $_SERVER['UNIQUE_ID'] ?? uniqid() . dechex(SnowFlake::generateParticle());
-            setcookie('LSESSID', self::$session_id, 0, '/');
+            $secure = $_SERVER['REQUEST_SCHEME'] == 'https';
+            setcookie('LSESSID', self::$session_id, 0, '/', '', $secure);
         }else{
             self::$session_id = $_COOKIE['LSESSID'];
         }

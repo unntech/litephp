@@ -36,7 +36,7 @@ class CorpWeixin
         $this->FromUserName = $FromUserName;
     }
 
-    public function setAgetnID($AgentID)
+    public function setAgentID($AgentID)
     {
         $this->AgentID = $AgentID;
     }

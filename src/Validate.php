@@ -578,7 +578,7 @@ class Validate{
      * @return bool
      */
     public static function isImage(string $file): bool {
-        $ext = FileHelper::getFileExt($file);
+        $ext = pathinfo($file, PATHINFO_EXTENSION);
         return in_array($ext, ['jpg', 'jpeg', 'gif', 'png', 'bmp', 'webp']);
     }
 
@@ -589,7 +589,7 @@ class Validate{
      * @return bool
      */
     public static function isExecuteFile(string $file): bool {
-        $ext = FileHelper::getFileExt($file);
+        $ext = pathinfo($file, PATHINFO_EXTENSION);
         return in_array($ext, ['php', 'php3', 'php4', 'php5', 'exe', 'sh', 'py']);
     }
 
@@ -702,8 +702,8 @@ class Validate{
     public static function isEqualArray(array $arr1, array $arr2): bool {
         $res = false;
         if (count($arr1) == count($arr2)) {
-            ArrayHelper::regularSort($arr1, true);
-            ArrayHelper::regularSort($arr2, true);
+            ksort($arr1);
+            ksort($arr2);
             $res = serialize($arr1) === serialize($arr2);
         }
 
